@@ -1,12 +1,14 @@
-﻿<Window x:Class="md_dbdocs.app.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:md_dbdocs.app"
+        xmlns:v="clr-namespace:md_dbdocs.app.ViewModels"
+        xmlns:Views="clr-namespace:md_dbdocs.app.Views" x:Class="md_dbdocs.app.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        
+        <Views:ConfigView HorizontalAlignment="Left" Margin="104,55,0,0" VerticalAlignment="Top" Height="328" Width="603"/>
     </Grid>
 </Window>

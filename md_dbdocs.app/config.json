@@ -1,0 +1,9 @@
+{
+  "server": "ZLUKEPF0XLD7U\\DEVSERVER",
+  "dataBase": "PDM",
+  "useWindowsAuth": true,
+  "sqlUserName": null,
+  "sqlPassword": null,
+  "markdownIncludeConfigFilePath": "C:\\_MyProjects\\SAPLens\\Database\\SAPLens.SQLServer\\_Info\\Docs\\include_config.json",
+  "sqlProjectRootPath": "C:\\_MyProjects\\SAPLens\\Database\\Test\\test2"
+}
