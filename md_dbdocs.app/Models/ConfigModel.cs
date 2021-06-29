@@ -1,5 +1,6 @@
 ﻿using md_dbdocs.app.Helpers;
 using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 
 namespace md_dbdocs.app.Models
@@ -37,9 +38,9 @@ namespace md_dbdocs.app.Models
         public string SqlProjectRootPath { get => sqlProjectRootPath; set { sqlProjectRootPath = value; base.OnPropertyChanged(); } }
 
 
-
         public bool UseSqlLogin { get => useSqlLogin; set { useSqlLogin = value; base.OnPropertyChanged(); } }
 
+        public ObservableCollection<ConfigValidationModel> Validation { get; set; }
 
         public void WinAuthChange([CallerMemberName] string propertyName = null)
         {

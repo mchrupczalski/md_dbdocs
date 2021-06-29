@@ -71,8 +71,15 @@
     <Compile Include="Helpers\RelayCommand.cs" />
     <Compile Include="Helpers\YamlSerializer.cs" />
     <Compile Include="Models\ConfigValidationModel.cs" />
+    <Compile Include="Models\DbObjectDetailsModel.cs" />
+    <Compile Include="Models\YamlModel\AuthorModel.cs" />
+    <Compile Include="Models\YamlModel\DatesInfoModel.cs" />
+    <Compile Include="Models\YamlModel\HeaderCommentModel.cs" />
+    <Compile Include="Services\DataService.cs" />
+    <Compile Include="Services\FileScannerService.cs" />
     <Compile Include="Services\ViewNavigationService.cs" />
     <Compile Include="ViewModels\ConfigViewModel.cs" />
+    <Compile Include="ViewModels\DetailsViewModel.cs" />
     <Compile Include="Views\ConfigView.xaml.cs">
       <DependentUpon>ConfigView.xaml</DependentUpon>
     </Compile>

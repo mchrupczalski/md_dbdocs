@@ -17,14 +17,10 @@ namespace md_dbdocs.app.DataAccess
 
         public SqlServerDataAccess(ConfigModel config) => this.config = config;
 
-        public void CreateDbObjects()
+        public SqlConnection GetConnection()
         {
-            //throw new NotImplementedException();
-        }
-
-        private void ClearDbObjects()
-        {
-            //throw new NotImplementedException();
+            ConnectToDb();
+            return this.DbConnection;
         }
 
         public void Dispose()

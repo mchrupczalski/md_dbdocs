@@ -85,7 +85,7 @@
         <Button Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="3" Margin="10" Content="Validate configuration" Command="{Binding ValidateCommand}"/>
 
         <StackPanel Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="3">
-            <ListView ItemsSource="{Binding Validation}" MinHeight="200" Width="600">
+            <ListView ItemsSource="{Binding Config.Validation}" MinHeight="200" Width="600">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" MaxWidth="800">

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using md_dbdocs.app.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,9 +21,12 @@ namespace md_dbdocs.app.Views
     /// </summary>
     public partial class DetailsView : UserControl
     {
-        public DetailsView()
+        private readonly DetailsViewModel viewModel;
+
+        public DetailsView(DetailsViewModel viewModel)
         {
             InitializeComponent();
+            this.viewModel = viewModel;
         }
     }
 }

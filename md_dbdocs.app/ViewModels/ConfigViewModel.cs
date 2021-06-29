@@ -6,6 +6,7 @@ using md_dbdocs.app.Views;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 
 namespace md_dbdocs.app.ViewModels
 {
@@ -17,8 +18,6 @@ namespace md_dbdocs.app.ViewModels
         private ConfigModel config;
         public ConfigModel Config { get => config; set { config = value; base.OnPropertyChanged(); } }
 
-        public ObservableCollection<ConfigValidationModel> Validation { get; set; }
-
         public RelayCommand ValidateCommand { get; private set; }
         public RelayCommand NavNextCommand { get; private set; }
 
@@ -26,19 +25,23 @@ namespace md_dbdocs.app.ViewModels
         public ConfigViewModel()
         {
             this.Config = LoadConfig();
-            this.Validation = new ObservableCollection<ConfigValidationModel>();
+            Config.Validation = new ObservableCollection<ConfigValidationModel>();
             this.ValidateCommand = new RelayCommand(ValidateExecute, ValidateCanExecute);
             this.NavNextCommand = new RelayCommand(NavNextExecute, NavNextCanExecute);
         }
 
         private void NavNextExecute(object obj)
         {
-            ViewNavigationService.ViewNav.Navigate(new DetailsView());
+            var detailsVm = new DetailsViewModel(Config);
+            ViewNavigationService.ViewNav.Navigate(new DetailsView(detailsVm));
         }
 
         private bool NavNextCanExecute(object obj)
         {
-            return true;
+            bool isConnected = config.Validation.Where(m => m.ItemId == "db").Select(m => m.IsValid).FirstOrDefault();
+            bool isDbo = config.Validation.Where(m => m.ItemId == "dbo").Select(m => m.IsValid).FirstOrDefault();
+
+            return isConnected && isDbo;
         }
 
         private bool ValidateCanExecute(object obj) => true;
@@ -49,18 +52,37 @@ namespace md_dbdocs.app.ViewModels
             const string cmdNpm = "npm -v";
             const string cmdMdi = "npm list -g markdown-include";
 
-            this.Validation.Clear();
+            Config.Validation.Clear();
 
             // check database connection
-            this.Validation.Add(ValidateDbConnection());
+            var validateDb = ValidateDbConnection();
+            Config.Validation.Add(validateDb);
+
+            // check if user is dbo
+            var validateUser = new ConfigValidationModel();
+            validateUser.ItemId = "dbo";
+            validateUser.ValidationItem = "User is db_owner";
+            if (validateDb.IsValid)
+            {
+                var dbCnx = new SqlServerDataAccess(Config);
+                dbCnx.ConnectToDb();
+                Services.DataService dataService = new DataService(dbCnx.DbConnection);
+                validateUser.IsValid = dataService.IsUserDbo();
+            }
+            else
+            {
+                validateUser.IsValid = false;
+                validateUser.ExtMessage = "User is not a member of db_owner role or connection could not be established.";
+            }
+            Config.Validation.Add(validateUser);
 
             // check sql root path
             // check markdown-include config file
 
             // check prerequisite apps
-            this.Validation.Add(ValidateApps("Node.js", cmdNode));
-            this.Validation.Add(ValidateApps("npm", cmdNpm));
-            this.Validation.Add(ValidateApps("markdown-include", cmdMdi));
+            Config.Validation.Add(ValidateApps("node", "Node.js", cmdNode));
+            Config.Validation.Add(ValidateApps("npm", "npm", cmdNpm));
+            Config.Validation.Add(ValidateApps("mdi", "markdown-include", cmdMdi));
         }
 
         private ConfigModel LoadConfig()
@@ -83,6 +105,7 @@ namespace md_dbdocs.app.ViewModels
 
             using (var cnx = new SqlServerDataAccess(Config))
             {
+                vldt.ItemId = "db";
                 vldt.ValidationItem = "Database connection.";
                 
                 try
@@ -100,12 +123,13 @@ namespace md_dbdocs.app.ViewModels
             return vldt;
         }
 
-        private ConfigValidationModel ValidateApps(string appName, string cmdParameter)
+        private ConfigValidationModel ValidateApps(string itemId, string appName, string cmdParameter)
         {            
             string appV = CmdHelper.GetCmdOutput(cmdParameter);
             bool gotApp = !string.IsNullOrEmpty(appV);
 
             var appVldt = new ConfigValidationModel();
+            appVldt.ItemId = itemId;
             appVldt.ValidationItem = appName;
             appVldt.IsValid = gotApp;
             appVldt.ExtMessage = appV;
