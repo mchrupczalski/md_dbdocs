@@ -1,5 +1,4 @@
-﻿using md_dbdocs.app.Views;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,23 +13,16 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace md_dbdocs.app
+namespace md_dbdocs.app.Views
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for DetailsView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class DetailsView : UserControl
     {
-        public MainWindow()
+        public DetailsView()
         {
             InitializeComponent();
-            Services.ViewNavigationService.ViewNav = this;
-            Services.ViewNavigationService.Switch(new ConfigView());
-        }
-
-        public void Navigate(UserControl newView)
-        {
-            this.Content = newView;
         }
     }
 }

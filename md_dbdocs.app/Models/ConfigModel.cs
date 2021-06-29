@@ -41,7 +41,6 @@ namespace md_dbdocs.app.Models
         public bool UseSqlLogin { get => useSqlLogin; set { useSqlLogin = value; base.OnPropertyChanged(); } }
 
 
-
         public void WinAuthChange([CallerMemberName] string propertyName = null)
         {
             base.OnPropertyChanged(propertyName);

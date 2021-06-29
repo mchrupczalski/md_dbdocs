@@ -1,6 +1,8 @@
 ﻿using md_dbdocs.app.DataAccess;
 using md_dbdocs.app.Helpers;
 using md_dbdocs.app.Models;
+using md_dbdocs.app.Services;
+using md_dbdocs.app.Views;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -18,6 +20,7 @@ namespace md_dbdocs.app.ViewModels
         public ObservableCollection<ConfigValidationModel> Validation { get; set; }
 
         public RelayCommand ValidateCommand { get; private set; }
+        public RelayCommand NavNextCommand { get; private set; }
 
 
         public ConfigViewModel()
@@ -25,12 +28,20 @@ namespace md_dbdocs.app.ViewModels
             this.Config = LoadConfig();
             this.Validation = new ObservableCollection<ConfigValidationModel>();
             this.ValidateCommand = new RelayCommand(ValidateExecute, ValidateCanExecute);
+            this.NavNextCommand = new RelayCommand(NavNextExecute, NavNextCanExecute);
         }
 
-        private bool ValidateCanExecute(object obj)
+        private void NavNextExecute(object obj)
+        {
+            ViewNavigationService.ViewNav.Navigate(new DetailsView());
+        }
+
+        private bool NavNextCanExecute(object obj)
         {
             return true;
         }
+
+        private bool ValidateCanExecute(object obj) => true;
 
         private void ValidateExecute(object obj)
         {
@@ -93,10 +104,6 @@ namespace md_dbdocs.app.ViewModels
         {            
             string appV = CmdHelper.GetCmdOutput(cmdParameter);
             bool gotApp = !string.IsNullOrEmpty(appV);
-            if (gotApp && appV.Length > 10)
-            {
-                gotApp = (string.Compare("(empty)", appV) > 0);
-            }
 
             var appVldt = new ConfigValidationModel();
             appVldt.ValidationItem = appName;

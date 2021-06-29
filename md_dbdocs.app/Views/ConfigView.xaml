@@ -17,10 +17,11 @@
     </d:UserControl.DataContext>
 
     <UserControl.Resources>
-        <cnv:BoolToImageConverter x:Key="BoolToImageConverter" FalseImage="/Resources/invalid.png" TrueImage="/Resources/valid.png" />    
+        <cnv:BoolToImageConverter x:Key="BoolToImageConverter" FalseImage="/Resources/invalid.png" TrueImage="/Resources/valid.png" />
+        <cnv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>    
 
-    <Grid>
+    <Grid MaxWidth="800">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="auto"/>
@@ -43,60 +44,60 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="1" Grid.Column="1" TextAlignment="Right" Text="Server: "/>
-        <TextBox   Grid.Row="1" Grid.Column="2" TextAlignment="Left" Text="{Binding Config.Server}" d:Text="My Server Name"/>
+        <TextBlock Grid.Row="1" Grid.Column="1" TextAlignment="Right" Text="Server: " Margin="0 5 2 5"/>
+        <TextBox   Grid.Row="1" Grid.Column="2" TextAlignment="Left" Text="{Binding Config.Server}" d:Text="My Server Name" Margin="0 5 2 5"/>
 
-        <TextBlock Grid.Row="2" Grid.Column="1" TextAlignment="Right" Text="DataBase: "/>
-        <TextBox   Grid.Row="2" Grid.Column="2" TextAlignment="Left" Text="{Binding Config.DataBase}" d:Text="My DB Name"/>
+        <TextBlock Grid.Row="2" Grid.Column="1" TextAlignment="Right" Text="DataBase: " Margin="0 5 2 5"/>
+        <TextBox   Grid.Row="2" Grid.Column="2" TextAlignment="Left" Text="{Binding Config.DataBase}" d:Text="My DB Name" Margin="0 5 2 5"/>
 
-        <TextBlock Grid.Row="3" Grid.Column="1" TextAlignment="Right" Text="Use Windows Authentication: "/>
-        <CheckBox  Grid.Row="3" Grid.Column="2" IsChecked="{Binding Config.UseWindowsAuth}"/>
+        <TextBlock Grid.Row="3" Grid.Column="1" TextAlignment="Right" Text="Use Windows Authentication: " Margin="0 5 2 5"/>
+        <CheckBox  Grid.Row="3" Grid.Column="2" IsChecked="{Binding Config.UseWindowsAuth}" Margin="0 5 2 5"/>
 
-        <TextBlock Grid.Row="4" Grid.Column="1" TextAlignment="Right" Text="SQL UserName: " IsEnabled="{Binding Config.UseSqlLogin}"/>
-        <TextBox   Grid.Row="4" Grid.Column="2" TextAlignment="Left" Text="{Binding Config.SqlUserName}" d:Text="My SQL UserName" IsEnabled="{Binding Config.UseSqlLogin}"/>
+        <TextBlock Grid.Row="4" Grid.Column="1" TextAlignment="Right" Text="SQL UserName: " IsEnabled="{Binding Config.UseSqlLogin}" Visibility="{Binding Config.UseSqlLogin, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0 5 2 5"/>
+        <TextBox   Grid.Row="4" Grid.Column="2" TextAlignment="Left" Text="{Binding Config.SqlUserName}" d:Text="My SQL UserName" IsEnabled="{Binding Config.UseSqlLogin}" Visibility="{Binding Config.UseSqlLogin, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0 5 2 5"/>
 
-        <TextBlock Grid.Row="5" Grid.Column="1" TextAlignment="Right" Text="SQL Password: " IsEnabled="{Binding Config.UseSqlLogin}"/>
-        <TextBox   Grid.Row="5" Grid.Column="2" TextAlignment="Left" Text="{Binding Config.SqlPassword}" d:Text="My SQL Password" InputScope="Password" IsEnabled="{Binding Config.UseSqlLogin}"/>
+        <TextBlock Grid.Row="5" Grid.Column="1" TextAlignment="Right" Text="SQL Password: " IsEnabled="{Binding Config.UseSqlLogin}" Visibility="{Binding Config.UseSqlLogin, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0 5 2 5"/>
+        <TextBox   Grid.Row="5" Grid.Column="2" TextAlignment="Left" Text="{Binding Config.SqlPassword}" d:Text="My SQL Password" InputScope="Password" IsEnabled="{Binding Config.UseSqlLogin}" Visibility="{Binding Config.UseSqlLogin, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0 5 2 5"/>
 
-        <TextBlock Grid.Row="6" Grid.Column="1" TextAlignment="Right" Text="Markdown-include config file: "/>
-        <TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding Config.MarkdownIncludeConfigFilePath}" TextWrapping="Wrap" MaxWidth="300"/>
+        <TextBlock Grid.Row="6" Grid.Column="1" TextAlignment="Right" Text="Markdown-include config file: " Margin="0 5 2 5"/>
+        <TextBlock Grid.Row="6" Grid.Column="2" Text="{Binding Config.MarkdownIncludeConfigFilePath}" TextWrapping="Wrap" MaxWidth="300" Margin="0 5 2 5"/>
         <Grid      Grid.Row="6" Grid.Column="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Button Grid.Row="1"    Content="Browse" />
+            <Button Grid.Row="1"    Content="Browse" MaxWidth="100" HorizontalAlignment="Left"/>
         </Grid>
-        
 
-        <TextBlock Grid.Row="7" Grid.Column="1" TextAlignment="Right" Text="SQL Project Root Folder: "/>
-        <TextBlock Grid.Row="7" Grid.Column="2" Text="{Binding Config.SqlProjectRootPath}"/>
+
+        <TextBlock Grid.Row="7" Grid.Column="1" TextAlignment="Right" Text="SQL Project Root Folder: " Margin="0 5 2 5"/>
+        <TextBlock Grid.Row="7" Grid.Column="2" Text="{Binding Config.SqlProjectRootPath}" Margin="0 5 2 5"/>
         <Grid      Grid.Row="7" Grid.Column="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Button Grid.Row="1" Content="Browse" />
+            <Button Grid.Row="1" Content="Browse" MaxWidth="100" HorizontalAlignment="Left"/>
         </Grid>
 
         <Button Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="3" Margin="10" Content="Validate configuration" Command="{Binding ValidateCommand}"/>
 
         <StackPanel Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="3">
-            <ListView ItemsSource="{Binding Validation}">
+            <ListView ItemsSource="{Binding Validation}" MinHeight="200" Width="600">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding ValidationItem}" Margin="2"/>
-                            <Image Source="{Binding IsValid, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2"/>
-                            <TextBlock Text="{Binding ExtMessage}" Margin="2"/>
+                        <StackPanel Orientation="Horizontal" MaxWidth="800">
+                            <TextBlock Text="{Binding ValidationItem}" Margin="2" VerticalAlignment="Top"/>
+                            <Image Source="{Binding IsValid, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2" VerticalAlignment="Top"/>
+                            <TextBlock Text="{Binding ExtMessage}" Margin="2" TextWrapping="Wrap" MaxWidth="400" VerticalAlignment="Top"/>
                         </StackPanel>                        
                     </DataTemplate>                    
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Button Content="Next" />
+            <Button Content="Next" Command="{Binding NavNextCommand}"/>
         </StackPanel>
 
     </Grid>
