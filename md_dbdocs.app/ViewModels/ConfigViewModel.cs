@@ -32,7 +32,9 @@ namespace md_dbdocs.app.ViewModels
 
         private void NavNextExecute(object obj)
         {
-            var detailsVm = new DetailsViewModel(Config);
+            var dbCnx = new SqlServerDataAccess(Config);
+            dbCnx.ConnectToDb();
+            var detailsVm = new DetailsViewModel(Config, dbCnx.DbConnection);
             ViewNavigationService.ViewNav.Navigate(new DetailsView(detailsVm));
         }
 
