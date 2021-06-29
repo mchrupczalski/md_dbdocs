@@ -55,6 +55,7 @@
     <Compile Include="Helpers\DbConnectionHelper.cs" />
     <Compile Include="Helpers\JsonConfigHelper.cs" />
     <Compile Include="Helpers\JsonSerializer.cs" />
+    <Compile Include="Helpers\RelayCommand.cs" />
     <Compile Include="Helpers\ShowWelcomeAndConfig.cs" />
     <Compile Include="Helpers\WelcomeScreen.cs" />
     <Compile Include="Helpers\YamlSerializer.cs" />

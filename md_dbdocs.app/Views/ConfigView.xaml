@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:md_dbdocs.app.Views"
              xmlns:ViewModels="clr-namespace:md_dbdocs.app.ViewModels" xmlns:Models="clr-namespace:md_dbdocs.app.Models" x:Class="md_dbdocs.app.Views.ConfigView"
              mc:Ignorable="d" 
+            xmlns:cnv="clr-namespace:md_dbdocs.app.Converters"
              d:DesignHeight="450" d:DesignWidth="800" d:Background="White">
     <d:UserControl.DataContext>
         <ViewModels:ConfigViewModel>
@@ -15,6 +16,9 @@
         </ViewModels:ConfigViewModel>
     </d:UserControl.DataContext>
 
+    <UserControl.Resources>
+        <cnv:BoolToImageConverter x:Key="BoolToImageConverter" FalseImage="/Resources/invalid.png" TrueImage="/Resources/valid.png" />    
+    </UserControl.Resources>    
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -27,6 +31,7 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
@@ -76,7 +81,23 @@
             <Button Grid.Row="1" Content="Browse" />
         </Grid>
 
-        <Button Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="3" Margin="10" Content="Validate configuration" />
+        <Button Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="3" Margin="10" Content="Validate configuration" Command="{Binding ValidateCommand}"/>
+
+        <StackPanel Grid.Row="9" Grid.Column="1" Grid.ColumnSpan="3">
+            <ListView ItemsSource="{Binding Validation}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding ValidationItem}" Margin="2"/>
+                            <Image Source="{Binding IsValid, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2"/>
+                            <TextBlock Text="{Binding ExtMessage}" Margin="2"/>
+                        </StackPanel>                        
+                    </DataTemplate>                    
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <Button Content="Next" />
+        </StackPanel>
 
     </Grid>
 </UserControl>
