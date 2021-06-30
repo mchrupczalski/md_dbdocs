@@ -1,6 +1,15 @@
 # md_dbdocs
 Markdown database documentation done right.  
 
+Supported database objects:
+- FUNCTION
+- PROCEDURE
+- ROLE
+- SCHEMA
+- TABLE
+- TYPE
+- VIEW
+
 ### How to use
 
 #### Project setup

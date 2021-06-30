@@ -5,19 +5,20 @@ using System.IO;
 
 namespace md_dbdocs.app.Models
 {
-    public class SqlObjectDetailsModel
+    public class ProjectObjectModel
     {
         public FileInfo FileInfo { get; set; }
+        public string CreateObjectType { get; set; }
         public string CreateObjectSchema { get; set; }
         public string CreateObjectName { get; set; }
         public bool HasTagDbDocs { get; set; }
         public bool HasTagDiagram { get; set; }
         public bool HasTagChangeLog { get; set; }
         public HeaderCommentModel HeaderModel { get; set; }
-        public DbObjectModel DbObjectModel { get; set; }
+        public ServerObjectModel DbObjectModel { get; set; }
         public List<Exception> ProcessingExceptions { get; set; }
 
-        public SqlObjectDetailsModel()
+        public ProjectObjectModel()
         {
             this.ProcessingExceptions = new List<Exception>();
         }

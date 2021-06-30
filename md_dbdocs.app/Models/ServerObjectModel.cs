@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace md_dbdocs.app.Models
 {
-    public class DbObjectModel
+    public class ServerObjectModel
     {
         public string ObjectType { get; set; }
     }

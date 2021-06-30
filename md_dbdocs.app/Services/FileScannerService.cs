@@ -1,11 +1,10 @@
-﻿using md_dbdocs.app.Models;
+﻿using md_dbdocs.app.Helpers;
+using md_dbdocs.app.Models;
+using md_dbdocs.app.Models.YamlModel;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace md_dbdocs.app.Services
 {
@@ -20,9 +19,9 @@ namespace md_dbdocs.app.Services
             this._sqlConnection = sqlConnection;
         }
 
-        public List<SqlObjectDetailsModel> GetSqlObjectDetailsModels()
+        public List<ProjectObjectModel> GetSqlObjectDetailsModels()
         {
-            var objList = new List<SqlObjectDetailsModel>();
+            var objList = new List<ProjectObjectModel>();
 
             // get list of files
             DirectoryInfo sqlProjInfo = new DirectoryInfo(this._sqlProjectRootPath);
@@ -33,34 +32,181 @@ namespace md_dbdocs.app.Services
                 // second filter on sql files required as GetFiles also returning sqlproject, etc
                 if (file.Extension == ".sql")
                 {
-                    var projFile = new SqlObjectDetailsModel();
+                    var projFile = new ProjectObjectModel();
                     projFile.FileInfo = file;
 
-                    // check if CREATE statement
+                    // check if CREATE statement - get Obj Type, Schema and Name
                     GetSqlCreateDetails(projFile);
+
+                    // check file again and look for tags
+                    GetDbDocsTags(projFile);
+
+                    // get object details from sql server
+                    GetServerObjectDetails(projFile);
                 }
             }
 
             return objList;
         }
 
-        private void GetSqlCreateDetails(SqlObjectDetailsModel projFile)
+        private void GetServerObjectDetails(ProjectObjectModel projFile)
         {
+            throw new NotImplementedException();
+        }
+
+        private void GetDbDocsTags(ProjectObjectModel projFile)
+        {
+            /* 
+             * read given file line by line until any of the know tags found
+             * add tag to tags list
+             * add current line to a string related to a last tag in the list
+             * if closing tag found, remove from the list and switch to previous tag
+             */
+
+            // list of supported tags
+            List<string> KnownTags = new List<string>() { "dbdocs", "diagram", "change_log" };
+            string dbdocs = string.Empty;
+            string diagram = string.Empty;
+            string change_log = string.Empty;
+
+            // read file
+            StreamReader reader = projFile.GetFileText();
+
+            string line;
+            string tag;
+            List<string> Tags = new List<string>();
+
+            while (!reader.EndOfStream)
+            {
+                // read line
+                line = reader.ReadLine();
+
+                // check for any known tags
+                int tagOpen = 0;
+                int tagClose = 0;
+                foreach (var knownTag in KnownTags)
+                {
+                    string findOpen = $"<{ knownTag }>";
+                    tagOpen = line.IndexOf(findOpen);
+                    // if opening tag found add to list and remove from the line
+                    if (tagOpen > -1)
+                    {
+                        Tags.Add(knownTag);
+                        line = line.Replace(findOpen, string.Empty);
+                    }
+
+                    string findClose = $"</{ knownTag }>";
+                    tagClose = line.IndexOf(findClose);
+                    // if closing tag found remove from the list and remove from the line
+                    if (tagClose > -1)
+                    {
+                        Tags.Remove(knownTag);
+                        line = line.Replace(findClose, string.Empty);
+                    }
+
+                    // remove new line and tab
+                    line = line.Replace("/n", string.Empty);
+                    line = line.Replace("/t", string.Empty);
+                }
+
+                // set last tag in the list as active
+                tag = Tags.Count > 0 ? Tags[Tags.Count - 1] : string.Empty;
+
+                // write line to string corresponding to tag
+                switch (tag)
+                {
+                    case "dbdocs":
+                        dbdocs += line + Environment.NewLine;
+                        break;
+                    case "diagram":
+                        diagram += line + Environment.NewLine;
+                        break;
+                    case "change_log":
+                        change_log += line + Environment.NewLine;
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+
+            var headerCommentModel = new HeaderCommentModel();
+            try
+            {
+                using (var ys = new YamlSerializer())
+                {
+                    headerCommentModel = ys.DeSerialize<HeaderCommentModel>(dbdocs);
+                }
+
+                headerCommentModel.Diagram = diagram;
+                headerCommentModel.ChangeLog = change_log;
+
+                // if tags found assign properties to projFile model
+                projFile.HasTagDbDocs = !string.IsNullOrEmpty(dbdocs);
+                projFile.HasTagDiagram = !string.IsNullOrEmpty(diagram);
+                projFile.HasTagChangeLog = !string.IsNullOrEmpty(change_log);
+            }
+            catch (Exception ex)
+            {
+                projFile.ProcessingExceptions.Add(ex);
+            }
+        }
+
+        private void GetSqlCreateDetails(ProjectObjectModel projFile)
+        {
+            List<string> supportedObjTypes = new List<string>()
+            {
+                "FUNCTION","PROCEDURE","TABLE","TYPE","VIEW" /*,"ROLE","SCHEMA" --Commented out as CREATE signature differs from other types */
+            };
+
             StreamReader reader = projFile.GetFileText();
             string line;
             int createPos;
 
+            // loop line by line until CREATE found, then extract Object Type, Schema and Name
             while (!reader.EndOfStream)
             {
                 line = reader.ReadLine();
                 createPos = line.ToUpper().IndexOf("CREATE");
                 if (createPos > -1)
                 {
-                    // remove any double spacing
+                    // remove any double spacing and []
                     line = ReplaceAllString("  ", " ", line);
+                    line.Replace("[", "");
+                    line.Replace("]", "");
+
                     string[] lineSplit = line.Split(' ');
 
-                    string schemaAndName = lineSplit[2];
+                    bool isSupported = false;
+                    string objType = lineSplit[1].ToUpper();
+                    string objSchema = "";
+                    string objName = lineSplit[2];
+
+                    if (objType == "ROLE" || objType == "SCHEMA")
+                    {
+                        isSupported = true;
+                        objSchema = "N/A";
+                    }
+                    else if (supportedObjTypes.Contains(objType))
+                    {
+                        isSupported = true;
+
+                        // check how many part name (server.db.schema.name)
+                        string[] nameSplit = objName.Split('.');
+                        objSchema = nameSplit[nameSplit.Length - 2];
+                        objName = nameSplit[nameSplit.Length - 1];
+                    }
+
+                    // attach properties if file contains definition for supported object
+                    if (isSupported)
+                    {
+                        projFile.CreateObjectType = objType;
+                        projFile.CreateObjectSchema = objSchema;
+                        projFile.CreateObjectName = objName;
+                    }
+
+                    // CREATE found - stop scanning
+                    return;
                 }
             }
 

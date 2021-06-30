@@ -71,14 +71,13 @@
     <Compile Include="Helpers\RelayCommand.cs" />
     <Compile Include="Helpers\YamlSerializer.cs" />
     <Compile Include="Models\ConfigValidationModel.cs" />
-    <Compile Include="Models\DbObjectModel.cs" />
-    <Compile Include="Models\SqlObjectDetailsModel.cs" />
+    <Compile Include="Models\ServerObjectModel.cs" />
+    <Compile Include="Models\ProjectObjectModel.cs" />
     <Compile Include="Models\YamlModel\AuthorModel.cs" />
     <Compile Include="Models\YamlModel\DatesInfoModel.cs" />
     <Compile Include="Models\YamlModel\HeaderCommentModel.cs" />
     <Compile Include="Services\DataService.cs" />
     <Compile Include="Services\FileScannerService.cs" />
-    <Compile Include="Services\sqlconnection.cs" />
     <Compile Include="Services\ViewNavigationService.cs" />
     <Compile Include="ViewModels\ConfigViewModel.cs" />
     <Compile Include="ViewModels\DetailsViewModel.cs" />
