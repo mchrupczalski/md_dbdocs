@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dapper, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dapper.2.0.90\lib\net461\Dapper.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -64,11 +67,14 @@
     </ApplicationDefinition>
     <Compile Include="Converters\BoolToImageConverter.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
+    <Compile Include="DataAccess\DataAccess.cs" />
     <Compile Include="DataAccess\SqlServerDataAccess.cs" />
     <Compile Include="Helpers\BindableBase.cs" />
     <Compile Include="Helpers\CmdHelper.cs" />
+    <Compile Include="Helpers\ConnectionStringHelper.cs" />
     <Compile Include="Helpers\JsonSerializer.cs" />
     <Compile Include="Helpers\RelayCommand.cs" />
+    <Compile Include="Helpers\ServerObjectsHelper.cs" />
     <Compile Include="Helpers\YamlSerializer.cs" />
     <Compile Include="Models\ConfigValidationModel.cs" />
     <Compile Include="Models\ServerObjectModel.cs" />
@@ -145,6 +151,8 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="SQL\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -105,28 +105,27 @@ namespace md_dbdocs.app.ViewModels
         {
             var vldt = new ConfigValidationModel();
 
-            using (var cnx = new SqlServerDataAccess(Config))
+            using (var dbCnx = new DataAccess.DataAccess(ConnectionStringHelper.GetConnectionString(Config)))
             {
                 vldt.ItemId = "db";
                 vldt.ValidationItem = "Database connection.";
-                
+
                 try
                 {
-                    cnx.ConnectToDb();
+                    vldt.IsValid = dbCnx.IsConnectionValid();
                     vldt.ExtMessage = "Connected.";
                 }
                 catch (Exception ex)
                 {
                     vldt.ExtMessage = ex.Message;
                 }
+            };
 
-                vldt.IsValid = cnx.IsConnected;
-            }
             return vldt;
         }
 
         private ConfigValidationModel ValidateApps(string itemId, string appName, string cmdParameter)
-        {            
+        {
             string appV = CmdHelper.GetCmdOutput(cmdParameter);
             bool gotApp = !string.IsNullOrEmpty(appV);
 

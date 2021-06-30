@@ -51,7 +51,10 @@ namespace md_dbdocs.app.Services
 
         private void GetServerObjectDetails(ProjectObjectModel projFile)
         {
-            throw new NotImplementedException();
+            // get parent details
+            // get children details
+            // get constrains
+            // get dependencies
         }
 
         private void GetDbDocsTags(ProjectObjectModel projFile)

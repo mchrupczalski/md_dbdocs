@@ -21,6 +21,9 @@ namespace md_dbdocs.app.Services
             bool isDbo = false;
 
             string query = "SELECT CAST(COALESCE(IS_ROLEMEMBER ('db_owner'),0) AS BIT) AS IsDbo";
+
+
+
             SqlCommand sqlCommand = new SqlCommand(query, this.sqlConnection);
             sqlCommand.CommandType = System.Data.CommandType.Text;
             SqlDataReader dataReader = sqlCommand.ExecuteReader();
