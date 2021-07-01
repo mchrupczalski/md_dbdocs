@@ -1,39 +1,3 @@
-/*
-<dbdocs>
------
-File: dbdocs_MinorObjectsInfo.sql
-Created Date: Sunday, 27/06/2021 18:38:25
-Author: Mateusz Chrupczalski - MC - ( mateusz.chrupczalski@edwardsvacuum.com; m.chrupczalski@outlook.com )
------
-Last Modified:
-   WeekDay: Sunday
-   Date: 27/06/2021 18:38:26
-Modified By: Mateusz Chrupczalski - MC - ( <<authoremail1>> )
------
-Type: Function Stored_Procedure Table Trigger
-Description: 
-Parameters: 
-   NA
-   NA
-Return Value: 
-   NA
-   NA
------
-Programming Notes: 
-
------
-Change_Log:
-Date               	| By |	Comments
--------------------	| -- |	--------------------------------------------------------------------------------
-
------
-</dbdocs>
- */
-
-
-
-DROP TABLE IF EXISTS [dbo].[dbdocs_MinorObjectsInfo]
-GO
 
 WITH CTE_Data AS (
 
@@ -42,6 +6,7 @@ WITH CTE_Data AS (
          c.object_id                    AS MajorObjectId
         ,m.ObjectType                   AS MajorObjectType
         ,m.ObjectTypeDesc               AS MajorObjectTypeDesc
+        ,m.SchemaName                   AS MajorObjectSchemaName
         ,m.ObjectName                   AS MajorObjectName
         ,c.column_id                    AS MinorObjectId
         ,c.name                         AS MinorObjectName
@@ -80,6 +45,7 @@ WITH CTE_Data AS (
          c.object_id                    AS MajorObjectId
         ,m.ObjectType                   AS MajorObjectType
         ,m.ObjectTypeDesc               AS MajorObjectTypeDesc
+        ,m.SchemaName                   AS MajorObjectSchemaName
         ,m.ObjectName                   AS MajorObjectName
         ,c.column_id                    AS MinorObjectId
         ,c.name                         AS MinorObjectName
@@ -118,6 +84,7 @@ WITH CTE_Data AS (
          c.object_id            AS MajorObjectId
         ,m.ObjectType           AS MajorObjectType
         ,m.ObjectTypeDesc       AS MajorObjectTypeDesc
+        ,m.SchemaName           AS MajorObjectSchemaName
         ,m.ObjectName           AS MajorObjectName
         ,c.parameter_id         AS MinorObjectId
         ,c.name                 AS MinorObjectName
@@ -149,6 +116,6 @@ WITH CTE_Data AS (
     )
 )
 
-SELECT d.* INTO [dbo].[dbdocs_MinorObjectsInfo] 
+SELECT d.* INTO [dbdocs].[MinorObjectsInfo]
 FROM CTE_Data AS d
-WHERE d.MajorObjectName NOT LIKE 'dbdocs%'
+WHERE d.MajorObjectSchemaName NOT LIKE 'dbdocs'

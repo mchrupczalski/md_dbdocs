@@ -33,10 +33,14 @@ namespace md_dbdocs.app.ViewModels
 
         private void NavNextExecute(object obj)
         {
+            // ToDo: add view for creating db object with selection to preserve them in the database
+
             // create database object
             var soHelp = new ServerObjectsHelper(ConnectionStringHelper.GetConnectionString(Config));
             soHelp.CreateServerObjects(); //ToDo: add to config validation
 
+
+            // ToDo: Simplify details model
             var dbCnx = new SqlServerDataAccess(Config);
             dbCnx.ConnectToDb();
             var detailsVm = new DetailsViewModel(Config, dbCnx.DbConnection);

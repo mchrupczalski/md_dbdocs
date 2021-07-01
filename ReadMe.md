@@ -113,6 +113,7 @@ SQL File Header Example:
 | \<dbdocs>     | \<\dbdocs>        | main tag, containing all info and other tags
 | \<diagram>    |  \<\diagram>      | [mermaid](https://mermaid-js.github.io/mermaid/#/) diagram code
 | \<change_log> | \<\change_log>    | change log table
+| \<dbd_col>    | \<\dbd_col>        | inline field extended description
 
 #### Prerequisites
 - [Node.js & npm](https://www.npmjs.com/get-npm)

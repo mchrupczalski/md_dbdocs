@@ -12,25 +12,28 @@ namespace md_dbdocs.app.Services
     {
         private readonly string _sqlProjectRootPath;
         private readonly SqlConnection _sqlConnection;
+        private readonly ConfigModel _configModel;
 
-        public FileScannerService(string sqlProjectRootPath, SqlConnection sqlConnection)
+        public FileScannerService(ConfigModel configModel)
         {
-            this._sqlProjectRootPath = sqlProjectRootPath;
-            this._sqlConnection = sqlConnection;
+            _configModel = configModel;
         }
 
-        public List<ProjectObjectModel> GetSqlObjectDetailsModels()
+        /// <summary>
+        /// Scans all files in Project and populates server table with files information.
+        /// </summary>
+        public void PopulateProjectFilesInfoTable()
         {
             var objList = new List<ProjectObjectModel>();
 
             // get list of files
-            DirectoryInfo sqlProjInfo = new DirectoryInfo(this._sqlProjectRootPath);
+            DirectoryInfo sqlProjInfo = new DirectoryInfo(this._configModel.SqlProjectRootPath);
             FileInfo[] fileInfos = sqlProjInfo.GetFiles("*.sql", SearchOption.AllDirectories);
 
             foreach (FileInfo file in fileInfos)
             {
                 // second filter on sql files required as GetFiles also returning sqlproject, etc
-                if (file.Extension == ".sql")
+                if ((file.Extension == ".sql") && (file.Name.IndexOf(".publish.sql") == -1))
                 {
                     var projFile = new ProjectObjectModel();
                     projFile.FileInfo = file;
@@ -41,22 +44,47 @@ namespace md_dbdocs.app.Services
                     // check file again and look for tags
                     GetDbDocsTags(projFile);
 
-                    // get object details from sql server
-                    GetServerObjectDetails(projFile);
+                    objList.Add(projFile);
                 }
             }
 
-            return objList;
+            // send objects details to sql server
+            SendToServer(objList);
         }
 
-        private void GetServerObjectDetails(ProjectObjectModel projFile)
+        private void SendToServer(List<ProjectObjectModel> objList)
         {
-            // get parent details
-            // get children details
-            // get constrains
-            // get dependencies
+            const string procAddInfo = "dbdocs.spAddFileInfo";
+
+            using (var dal = new DataAccess.DataAccess(ConnectionStringHelper.GetConnectionString(_configModel)))
+            {
+                foreach (var item in objList)
+                {
+                    // populate FilesInfo
+                    var parameters = new List<SqlParameter>()
+                    {
+                        new SqlParameter(){ ParameterName = "@FileName", Value = item.FileInfo.Name },
+                        new SqlParameter(){ ParameterName = "@FilePath", Value = item.FileInfo.FullName },
+                        new SqlParameter(){ ParameterName = "@ObjectType", Value = item.CreateObjectType },
+                        new SqlParameter(){ ParameterName = "@ObjectSchema", Value = item.CreateObjectSchema },
+                        new SqlParameter(){ ParameterName = "@ObjectName", Value = item.CreateObjectName },
+                        new SqlParameter(){ ParameterName = "@HasTagDbDocs", Value = item.HasTagDbDocs },
+                        new SqlParameter(){ ParameterName = "@HasTagDiagram", Value = item.HasTagDiagram },
+                        new SqlParameter(){ ParameterName = "@HasTagChangeLog", Value = item.HasTagChangeLog }
+                    };
+
+                    dal.ExecuteProcedure(procAddInfo, parameters);
+
+                    // populate Exceptions
+                    // populate Fields and Parameters info
+                }
+            }
         }
 
+        /// <summary>
+        /// Scans project file in search for dbdocs tags and serialize to class.
+        /// </summary>
+        /// <param name="projFile">The proj file.</param>
         private void GetDbDocsTags(ProjectObjectModel projFile)
         {
             /* 
@@ -66,8 +94,10 @@ namespace md_dbdocs.app.Services
              * if closing tag found, remove from the list and switch to previous tag
              */
 
+            // ToDo: add <dbdoc_col>
+
             // list of supported tags
-            List<string> KnownTags = new List<string>() { "dbdocs", "diagram", "change_log" };
+            List<string> knownTags = new List<string>() { "dbdocs", "diagram", "change_log" };
             string dbdocs = string.Empty;
             string diagram = string.Empty;
             string change_log = string.Empty;
@@ -87,7 +117,7 @@ namespace md_dbdocs.app.Services
                 // check for any known tags
                 int tagOpen = 0;
                 int tagClose = 0;
-                foreach (var knownTag in KnownTags)
+                foreach (var knownTag in knownTags)
                 {
                     string findOpen = $"<{ knownTag }>";
                     tagOpen = line.IndexOf(findOpen);
@@ -136,10 +166,13 @@ namespace md_dbdocs.app.Services
             var headerCommentModel = new HeaderCommentModel();
             try
             {
-                using (var ys = new YamlSerializer())
+                if (!string.IsNullOrEmpty(dbdocs))
                 {
-                    headerCommentModel = ys.DeSerialize<HeaderCommentModel>(dbdocs);
-                }
+                    using (var ys = new YamlSerializer())
+                    {
+                        headerCommentModel = ys.DeSerialize<HeaderCommentModel>(dbdocs);
+                    }
+                }               
 
                 headerCommentModel.Diagram = diagram;
                 headerCommentModel.ChangeLog = change_log;
@@ -155,6 +188,10 @@ namespace md_dbdocs.app.Services
             }
         }
 
+        /// <summary>
+        /// Gets the sql CREATE details.
+        /// </summary>
+        /// <param name="projFile">The proj file.</param>
         private void GetSqlCreateDetails(ProjectObjectModel projFile)
         {
             List<string> supportedObjTypes = new List<string>()
@@ -212,9 +249,15 @@ namespace md_dbdocs.app.Services
                     return;
                 }
             }
-
         }
 
+        /// <summary>
+        /// Replaces all occurrences of given string.
+        /// </summary>
+        /// <param name="findOld">The find old.</param>
+        /// <param name="replaceWith">The replace with.</param>
+        /// <param name="searchIn">The search in.</param>
+        /// <returns></returns>
         private string ReplaceAllString(string findOld, string replaceWith, string searchIn)
         {
             while (searchIn.IndexOf(findOld) > -1)

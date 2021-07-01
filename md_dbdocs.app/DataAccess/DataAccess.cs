@@ -53,7 +53,7 @@ namespace md_dbdocs.app.DataAccess
         /// <summary>Executes the specified procedure name.</summary>
         /// <param name="procedureName">Name of the procedure.</param>
         /// <param name="sqlParameters">The SQL parameters.</param>
-        public void Execute(string procedureName, List<SqlParameter> sqlParameters = null)
+        public void ExecuteProcedure(string procedureName, List<SqlParameter> sqlParameters = null)
         {
             // connection
             SqlConnection sqlConnection = new SqlConnection(_connectionString);
@@ -92,6 +92,53 @@ namespace md_dbdocs.app.DataAccess
             }
         }
 
+        /// <summary>
+        /// Execute stored procedure with output parameter of type object
+        /// </summary>
+        /// <param name="procedureName">Stored Procedure name without schema (default app)</param>
+        /// <param name="outputParameter">Output parameter</param>
+        /// <param name="sqlParameters">List of input parameters</param>
+        /// <returns>Output parameter as object need to be casted to expected type</returns>
+        public object ExecuteProcedureWithOutput(string procedureName, SqlParameter outputParameter, List<SqlParameter> sqlParameters = null)
+        {
+            object output;
+
+            SqlConnection sqlConnection = new SqlConnection(_connectionString);
+
+            SqlCommand sqlCommand = new SqlCommand(procedureName, sqlConnection);
+            sqlCommand.CommandType = CommandType.StoredProcedure;
+            sqlCommand.CommandTimeout = 300;
+
+            // add parameters
+            if (sqlParameters.Count > 0)
+            {
+                foreach (SqlParameter parameter in sqlParameters)
+                {
+                    sqlCommand.Parameters.AddWithValue(parameter.ParameterName, parameter.Value);
+                }
+            }
+
+            // add output parameter
+            sqlCommand.Parameters.Add(outputParameter);
+
+
+            try
+            {
+                sqlConnection.Open();
+                sqlCommand.ExecuteNonQuery();
+
+                output = outputParameter.Value;
+
+                sqlConnection.Close();
+
+                return output;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+        }
 
         /// <summary>Executes the text query.</summary>
         /// <param name="query">The query.</param>
@@ -139,5 +186,7 @@ namespace md_dbdocs.app.DataAccess
 
             return isValid;
         }
+
+        
     }
 }

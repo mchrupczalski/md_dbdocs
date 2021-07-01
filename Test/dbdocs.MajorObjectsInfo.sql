@@ -1,13 +1,13 @@
 /*
 <dbdocs>
 -----
-File: dbdocs_AllObjectsInfo.sql
-Created Date: Sunday, 27/06/2021 15:08:20
+File: dbdocs.MajorObjectsInfo.sql
+Created Date: Sunday, 27/06/2021 17:46:54
 Author: Mateusz Chrupczalski - MC - ( mateusz.chrupczalski@edwardsvacuum.com; m.chrupczalski@outlook.com )
 -----
-Last Modified: 27/06/2021 05:nn:54
-   WeekDay: Sunday
-   Date: 27/06/2021 15:08:20
+Last Modified: 01/07/2021 08:nn:22
+   WeekDay: Thursday
+   Date: 01/07/2021 20:23:56
 Modified By: Mateusz Chrupczalski - MC - ( <<authoremail1>> )
 -----
 Type: Function Stored_Procedure Table Trigger
@@ -32,9 +32,6 @@ Date               	| By |	Comments
 
 
 
--- create a table with a list of all parent objects that are not from ms
-DROP TABLE IF EXISTS [dbo].[dbdocs_MajorObjectsInfo];
-GO
 
 WITH CTE_Data AS(
     -- get tables, functions, procedures and views
@@ -54,7 +51,7 @@ WITH CTE_Data AS(
             ON ao.schema_id = s.schema_id
         LEFT JOIN (SELECT major_id, [value] FROM sys.extended_properties WHERE (name = 'MS_Description' AND minor_id = 0)) AS x
             ON ao.object_id = x.major_id
-        INNER JOIN dbo.dbdocs_ObjectTypes AS ot
+        INNER JOIN dbdocs.ObjectTypes AS ot
             ON ao.[type] = ot.ObjectTypeId COLLATE Latin1_General_CI_AS
     WHERE(
         (ao.is_ms_shipped = 0) AND (ot.IsMajorType = 1)
@@ -120,6 +117,6 @@ WITH CTE_Data AS(
     )
 )
 
-SELECT d.* INTO [dbo].[dbdocs_MajorObjectsInfo] 
+SELECT d.* INTO [dbdocs].[MajorObjectsInfo] 
 FROM CTE_Data AS d
-WHERE d.ObjectName NOT LIKE 'dbdocs%'
+WHERE d.SchemaName NOT LIKE 'dbdocs%'

@@ -5,7 +5,7 @@ File: dbdocs_ObjectTypes.sql
 Created Date: Sunday, 27/06/2021 16:42:53
 Author: Mateusz Chrupczalski - MC - ( mateusz.chrupczalski@edwardsvacuum.com; m.chrupczalski@outlook.com )
 -----
-Last Modified: 27/06/2021 06:nn:59
+Last Modified: 01/07/2021 08:nn:19
    WeekDay: Sunday
    Date: 27/06/2021 16:42:53
 Modified By: Mateusz Chrupczalski - MC - ( <<authoremail1>> )
@@ -31,10 +31,8 @@ Date               	| By |	Comments
  */
 
 
-DROP TABLE IF EXISTS [dbo].[dbdocs_ObjectTypes];
-GO
 
-CREATE TABLE [dbo].[dbdocs_ObjectTypes](
+CREATE TABLE [dbdocs].[ObjectTypes](
      ObjectTypeId           NVARCHAR(5)
     ,ObjectTypeDesc         NVARCHAR(MAX)
     ,HasColumns             BIT
@@ -43,7 +41,7 @@ CREATE TABLE [dbo].[dbdocs_ObjectTypes](
     ,IsMajorType            BIT                 -- Type for objects like Tables, Views, Procedures
 )
 
-INSERT INTO [dbo].[dbdocs_ObjectTypes]
+INSERT INTO [dbdocs].[ObjectTypes]
 VALUES ('FN'    ,'SQL_SCALAR_FUNCTION'              ,0,1,0,1)
       ,('IF'    ,'SQL_INLINE_TABLE_VALUED_FUNCTION' ,0,1,0,1)
       ,('TF'    ,'SQL_TABLE_VALUED_FUNCTION'        ,0,1,0,1)

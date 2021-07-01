@@ -44,8 +44,8 @@ namespace md_dbdocs.app.ViewModels
              */
 
 
-            var scanner = new FileScannerService(_configModel.SqlProjectRootPath, _sqlConnection);
-            var models = scanner.GetSqlObjectDetailsModels();
+            var scanner = new FileScannerService(_configModel);
+            scanner.PopulateProjectFilesInfoTable();
         }
     }
 }

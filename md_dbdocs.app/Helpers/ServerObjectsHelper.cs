@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows;
 
 namespace md_dbdocs.app.Helpers
 {
@@ -22,36 +20,84 @@ namespace md_dbdocs.app.Helpers
 
         public bool CreateServerObjects()
         {
+            const string sqlObjTypesTableName = "dbdocs.ObjectTypes.sql";
+            const string sqlMajorTableName = "dbdocs.MajorObjectsInfo.sql";
+            const string sqlMinorTableName = "dbdocs.MinorObjectsInfo.sql";
+            const string sqlFilesInfo = "dbdocs.FilesInfo.sql";
+            const string sqlAddFileInfo = "dbdocs.spAddFileInfo.sql";
+
             bool allCreated = false;
             // clear old objects
             ClearSchema();
 
-            // create schema
-            // create tables
-            // create procedure to upload project files details
+            // make list of scripts to execute
+            List<string> scripts = new List<string>();
 
+            // create schema
+            scripts.Add("CREATE SCHEMA [dbdocs]");
+
+            // create tables
+            scripts.Add(GetSqlFile(sqlObjTypesTableName));
+            scripts.Add(GetSqlFile(sqlMajorTableName));
+            scripts.Add(GetSqlFile(sqlMinorTableName));
+            scripts.Add(GetSqlFile(sqlFilesInfo));
+
+            // create procedure to upload project files details
+            scripts.Add(GetSqlFile(sqlAddFileInfo));
+
+            // execute scripts
+            ExecuteSqlScripts(scripts);
+
+
+            // ToDo: Add wrapper try and return true if no errors
             return allCreated;
         }
 
+        /// <summary>
+        /// Gets the SQL file.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <returns>File content as string</returns>
+        private string GetSqlFile(string fileName)
+        {
+            string sqlFilePath = Environment.CurrentDirectory + "\\SQL\\" + fileName;
+            FileInfo procFile = new FileInfo(sqlFilePath);
+            return procFile.OpenText().ReadToEnd();
+        }
+
+        /// <summary>
+        /// Executes the SQL scripts.
+        /// </summary>
+        /// <param name="sqlScripts">The SQL scripts.</param>
+        /// <returns></returns>
+        private void ExecuteSqlScripts(List<string> sqlScripts)
+        {
+            using (var dal = new DataAccess.DataAccess(_connectionString))
+            {
+                foreach (var script in sqlScripts)
+                {
+                    dal.ExecuteText(script);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Clears the schema.
+        /// </summary>
         private void ClearSchema()
         {
             const string spClearName = "dbo.dbdocs_CleanUpSchema";
             const string sqlClearProcFileName = "dbo.dbdocs_CleanUpSchema.sql";
-            
+
             string execDelProc = $"DROP PROCEDURE IF EXISTS { spClearName }";
+            string createProcedure = GetSqlFile(sqlClearProcFileName);
 
-            string sqlClearProcFilePath = Environment.CurrentDirectory + "\\SQL\\" + sqlClearProcFileName;
-
-            FileInfo procFile = new FileInfo(sqlClearProcFilePath);
-            string createProcedure = procFile.OpenText().ReadToEnd();
-
-            
             using (var dal = new DataAccess.DataAccess(_connectionString))
             {
                 // remove procedure if already exists
                 dal.ExecuteText(execDelProc);
 
-                // create procedure for clearin schema
+                // create procedure for clearing schema
                 dal.ExecuteText(createProcedure);
 
                 // clear schema
@@ -60,7 +106,11 @@ namespace md_dbdocs.app.Helpers
                     new SqlParameter("@SchemaName",_dbSchema),
                     new SqlParameter("@WorkTest","w")
                 };
-                dal.Execute(spClearName, parameters);
+
+                var outputParam = new SqlParameter() { ParameterName = "@OutMsg", Direction = System.Data.ParameterDirection.Output, SqlDbType = System.Data.SqlDbType.NVarChar, Size = 4000 };
+
+                string clearingResult = (string)dal.ExecuteProcedureWithOutput(spClearName, outputParam, parameters);
+                MessageBox.Show(clearingResult);
 
                 // remove procedure
                 dal.ExecuteText(execDelProc);
