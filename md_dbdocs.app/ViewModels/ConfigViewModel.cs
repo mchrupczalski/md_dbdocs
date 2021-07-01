@@ -12,11 +12,11 @@ namespace md_dbdocs.app.ViewModels
 {
     public class ConfigViewModel : BindableBase
     {
-        private const string configFileName = "config.json";
-        private string jsonConfigPath = Environment.CurrentDirectory + "\\" + configFileName;
+        private const string _configFileName = "config.json";
+        private string _jsonConfigPath = Environment.CurrentDirectory + "\\" + _configFileName;
 
-        private ConfigModel config;
-        public ConfigModel Config { get => config; set { config = value; base.OnPropertyChanged(); } }
+        private ConfigModel _config;
+        public ConfigModel Config { get => _config; set { _config = value; base.OnPropertyChanged(); } }
 
         public RelayCommand ValidateCommand { get; private set; }
         public RelayCommand NavNextCommand { get; private set; }
@@ -30,8 +30,13 @@ namespace md_dbdocs.app.ViewModels
             this.NavNextCommand = new RelayCommand(NavNextExecute, NavNextCanExecute);
         }
 
+
         private void NavNextExecute(object obj)
         {
+            // create database object
+            var soHelp = new ServerObjectsHelper(ConnectionStringHelper.GetConnectionString(Config));
+            soHelp.CreateServerObjects(); //ToDo: add to config validation
+
             var dbCnx = new SqlServerDataAccess(Config);
             dbCnx.ConnectToDb();
             var detailsVm = new DetailsViewModel(Config, dbCnx.DbConnection);
@@ -40,8 +45,8 @@ namespace md_dbdocs.app.ViewModels
 
         private bool NavNextCanExecute(object obj)
         {
-            bool isConnected = config.Validation.Where(m => m.ItemId == "db").Select(m => m.IsValid).FirstOrDefault();
-            bool isDbo = config.Validation.Where(m => m.ItemId == "dbo").Select(m => m.IsValid).FirstOrDefault();
+            bool isConnected = _config.Validation.Where(m => m.ItemId == "db").Select(m => m.IsValid).FirstOrDefault();
+            bool isDbo = _config.Validation.Where(m => m.ItemId == "dbo").Select(m => m.IsValid).FirstOrDefault();
 
             return isConnected && isDbo;
         }
@@ -89,7 +94,7 @@ namespace md_dbdocs.app.ViewModels
 
         private ConfigModel LoadConfig()
         {
-            StreamReader reader = new StreamReader(jsonConfigPath);
+            StreamReader reader = new StreamReader(_jsonConfigPath);
             string jsonText = reader.ReadToEnd();
 
             ConfigModel config;
