@@ -83,6 +83,7 @@ WITH CTE_Data AS(
     )
 )
 
-SELECT d.* INTO [dbdocs].[MajorObjectsInfo] 
+SELECT ROW_NUMBER() OVER(ORDER BY d.SchemaName, d.ObjectName) AS RecordId, d.*
+INTO [dbdocs].[MajorObjectsInfo] 
 FROM CTE_Data AS d
 WHERE d.SchemaName NOT LIKE 'dbdocs'

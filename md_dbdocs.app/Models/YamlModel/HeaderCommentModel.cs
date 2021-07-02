@@ -39,7 +39,7 @@ namespace md_dbdocs.app.Models.YamlModel
         public Dictionary<string, string> Parameters { get; set; }
 
         [YamlMember(Alias = "Return_Value")]
-        public List<string> ReturnValue { get; set; }
+        public string ReturnValue { get; set; }
 
         [YamlMember(Alias = "Programming_Notes")]
         public List<string> Notes { get; set; }
@@ -47,5 +47,13 @@ namespace md_dbdocs.app.Models.YamlModel
 
         public string Diagram { get; set; }
         public string ChangeLog { get; set; }
+
+        public HeaderCommentModel()
+        {
+            // initialize empty dictionaries and lists
+            this.Fields = new Dictionary<string, string>();
+            this.Parameters = new Dictionary<string, string>();
+            this.Notes = new List<string>();
+        }
     }
 }

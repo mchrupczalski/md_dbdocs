@@ -5,6 +5,7 @@
     ,ObjectSchema       NVARCHAR(MAX)           NULL 
     ,ObjectName         NVARCHAR(MAX)           NULL
     ,ObjectDesc         NVARCHAR(MAX)           NULL
+    ,ObjectModule       NVARCHAR(MAX)           NULL 
 
     ,CONSTRAINT PK_DbDocsMajorObjects_FileName PRIMARY KEY([FileId])
 )

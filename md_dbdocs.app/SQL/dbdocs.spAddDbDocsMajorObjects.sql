@@ -4,6 +4,7 @@
     ,@ObjectSchema       NVARCHAR(MAX) = NULL
     ,@ObjectName         NVARCHAR(MAX) = NULL
     ,@ObjectDesc         NVARCHAR(MAX) = NULL
+    ,@ObjectModule       NVARCHAR(MAX) = NULL
 ) AS
 BEGIN
 
@@ -13,6 +14,7 @@ BEGIN
         ,ObjectSchema
         ,ObjectName
         ,ObjectDesc
+        ,ObjectModule
     ) 
     VALUES( 
          @FileName
@@ -20,6 +22,7 @@ BEGIN
         ,@ObjectSchema   
         ,@ObjectName
         ,@ObjectDesc
+        ,@ObjectModule
     )
 
 END

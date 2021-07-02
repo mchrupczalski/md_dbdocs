@@ -36,7 +36,7 @@ WITH CTE_Data AS (
         LEFT JOIN (SELECT major_id, minor_id, [value] FROM sys.extended_properties WHERE (name = 'MS_Description' AND class_desc = 'OBJECT_OR_COLUMN' AND minor_id > 0)) AS x
             ON c.object_id = x.major_id AND c.column_id = x.minor_id
     WHERE(
-        (o.HasColumns = 1) AND (o.ExtProp_UseSecondId = 0)
+        (o.HasColumns = 1) AND (o.ExtProp_UseSecondId = 0) AND (c.name IS NOT NULL) AND (c.name <> '')
     )
 
     -- get columns info for user table types
@@ -75,7 +75,7 @@ WITH CTE_Data AS (
         LEFT JOIN (SELECT major_id, minor_id, [value] FROM sys.extended_properties WHERE (name = 'MS_Description' AND class_desc = 'TYPE_COLUMN' AND minor_id > 0)) AS x
             ON m.ObjectId_Secondary = x.major_id AND c.column_id = x.minor_id
     WHERE(
-        (o.HasColumns = 1) AND (o.ExtProp_UseSecondId = 1)
+        (o.HasColumns = 1) AND (o.ExtProp_UseSecondId = 1) AND (c.name IS NOT NULL) AND (c.name <> '')
     )
 
     -- get parameters info
@@ -112,10 +112,11 @@ WITH CTE_Data AS (
         LEFT JOIN (SELECT major_id, minor_id, [value] FROM sys.extended_properties WHERE (name = 'MS_Description' AND class_desc = 'PARAMETER' AND minor_id > 0)) AS x
             ON c.object_id = x.major_id AND c.parameter_id = x.minor_id
     WHERE(
-        (o.HasParameters = 1)
+        (o.HasParameters = 1) AND (c.name IS NOT NULL) AND (c.name <> '')
     )
 )
 
-SELECT d.* INTO [dbdocs].[MinorObjectsInfo]
+SELECT ROW_NUMBER() OVER(ORDER BY d.MajorObjectSchemaName, d.MajorObjectName, d.MinorObjectName) AS RecordId, d.* 
+INTO [dbdocs].[MinorObjectsInfo]
 FROM CTE_Data AS d
 WHERE d.MajorObjectSchemaName NOT LIKE 'dbdocs'

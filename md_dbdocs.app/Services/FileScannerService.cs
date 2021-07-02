@@ -10,8 +10,6 @@ namespace md_dbdocs.app.Services
 {
     public class FileScannerService
     {
-        private readonly string _sqlProjectRootPath;
-        private readonly SqlConnection _sqlConnection;
         private readonly ConfigModel _configModel;
 
         public FileScannerService(ConfigModel configModel)
@@ -62,7 +60,8 @@ namespace md_dbdocs.app.Services
                 foreach (var item in objList)
                 {
                     // populate dbdocs Major Objects Info
-                    string majorObjDesc = item.HeaderModel != null ? item.HeaderModel.Description : string.Empty;
+                    string majorObjDesc = item.HeaderModel != null && item.HeaderModel.Description != null ? item.HeaderModel.Description : string.Empty;
+                    string majorObjModule = item.HeaderModel != null && item.HeaderModel.Module != null ? item.HeaderModel.Module : string.Empty;
 
                     var parameters = new List<SqlParameter>()
                     {
@@ -70,13 +69,14 @@ namespace md_dbdocs.app.Services
                         new SqlParameter(){ ParameterName = "@ObjectType", Value = item.CreateObjectType },
                         new SqlParameter(){ ParameterName = "@ObjectSchema", Value = item.CreateObjectSchema },
                         new SqlParameter(){ ParameterName = "@ObjectName", Value = item.CreateObjectName },
-                        new SqlParameter(){ ParameterName = "@ObjectDesc", Value = majorObjDesc }
+                        new SqlParameter(){ ParameterName = "@ObjectDesc", Value = majorObjDesc },
+                        new SqlParameter(){ ParameterName = "@ObjectModule", Value = majorObjModule },
                     };
 
                     dal.ExecuteProcedure(procAddMajor, parameters);
 
                     // populate Fields and Parameters info
-                    if (item.HeaderModel != null)
+                    if ((item.HeaderModel != null))
                     {
                         if ((item.HeaderModel.Fields.Count > 0) || (item.HeaderModel.Parameters.Count > 0))
                         {
@@ -102,22 +102,28 @@ namespace md_dbdocs.app.Services
                                     break;
                             }
 
-                            foreach (var field in item.HeaderModel.Fields)
+                            // select not empty dictionary and process all info
+                            Dictionary<string, string> childrenDic = item.HeaderModel.Fields.Count > 0 ? item.HeaderModel.Fields : item.HeaderModel.Parameters;
+                            foreach (var field in childrenDic)
                             {
+                                // add @ prefix if object type is FUN or PROC and @ not set already
+                                string childName = childTypeId == "PAR" && field.Key.Substring(0, 1) != "@" ? $"@{ field.Key }" : field.Key;
+                                string childVal = field.Value;
+
                                 parameters = new List<SqlParameter>()
-                            {
-                                new SqlParameter(){ ParameterName = "@MajorObjType", Value = item.CreateObjectType },
-                                new SqlParameter(){ ParameterName = "@MajorObjSchema", Value = item.CreateObjectSchema },
-                                new SqlParameter(){ ParameterName = "@MajorObjName", Value = item.CreateObjectName },
-                                new SqlParameter(){ ParameterName = "@ChildObjTypeId", Value = childTypeId },
-                                new SqlParameter(){ ParameterName = "@ChildObjName", Value = field.Key },
-                                new SqlParameter(){ ParameterName = "@ChildObjDesc", Value = field.Value }
-                            };
+                                {
+                                    new SqlParameter(){ ParameterName = "@MajorObjType", Value = item.CreateObjectType },
+                                    new SqlParameter(){ ParameterName = "@MajorObjSchema", Value = item.CreateObjectSchema },
+                                    new SqlParameter(){ ParameterName = "@MajorObjName", Value = item.CreateObjectName },
+                                    new SqlParameter(){ ParameterName = "@ChildObjTypeId", Value = childTypeId },
+                                    new SqlParameter(){ ParameterName = "@ChildObjName", Value = childName },
+                                    new SqlParameter(){ ParameterName = "@ChildObjDesc", Value = childVal }
+                                };
 
                                 dal.ExecuteProcedure(procAddMinor, parameters);
                             }
                         }
-                    }                    
+                    }
                 }
             }
         }
@@ -179,8 +185,8 @@ namespace md_dbdocs.app.Services
                     }
 
                     // remove new line and tab
-                    line = line.Replace("/n", string.Empty);
-                    line = line.Replace("/t", string.Empty);
+                    //line = line.Replace("/n", string.Empty);
+                    //line = line.Replace("/t", string.Empty);
                 }
 
                 // set last tag in the list as active
@@ -213,7 +219,7 @@ namespace md_dbdocs.app.Services
                     {
                         headerCommentModel = ys.DeSerialize<HeaderCommentModel>(dbdocs);
                     }
-                }               
+                }
 
                 headerCommentModel.Diagram = diagram;
                 headerCommentModel.ChangeLog = change_log;
@@ -222,6 +228,8 @@ namespace md_dbdocs.app.Services
                 projFile.HasTagDbDocs = !string.IsNullOrEmpty(dbdocs);
                 projFile.HasTagDiagram = !string.IsNullOrEmpty(diagram);
                 projFile.HasTagChangeLog = !string.IsNullOrEmpty(change_log);
+
+                projFile.HeaderModel = headerCommentModel;
             }
             catch (Exception ex)
             {
@@ -280,7 +288,7 @@ namespace md_dbdocs.app.Services
                         {
                             objSchema = nameSplit[nameSplit.Length - 2];
                             objName = nameSplit[nameSplit.Length - 1];
-                        }                        
+                        }
                     }
 
                     // attach properties if file contains definition for supported object
@@ -292,7 +300,7 @@ namespace md_dbdocs.app.Services
 
                         // CREATE found - stop scanning
                         return;
-                    }                    
+                    }
                 }
             }
         }
