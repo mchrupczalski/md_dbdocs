@@ -1,0 +1,60 @@
+"psi-header.config": {
+        "forceToTop": true,
+        "blankLinesAfter": 2,
+        "author": "Mateusz Chrupczalski",
+        "initials": "MC",
+        "authorEmail": "mateusz.chrupczalski@edwardsvacuum.com; m.chrupczalski@outlook.com"        
+    },
+    "psi-header.changes-tracking": {
+		"isActive": true,
+		"modAuthor": "Modified By:",
+		"modDate": "Last Modified:",
+		"modDateFormat": "DD/MM/YYYY hh:nn:ss",
+		"autoHeader": "off",
+		"enforceHeader": false
+	},
+    "psi-header.lang-config": [
+        {
+            "language": "*",
+            "modAuthor": "Modified By:",
+			"modDate": "Last Modified:",
+            "modDateFormat": "DD/MM/YYYY hh:nn:ss"
+        }
+    ],
+    "psi-header.templates": [
+        {
+			"language": "sql",
+			"template": [
+                "File: <<filename>>",
+				"Created Date: <<filecreated('dddd, DD/MM/YYYY HH:mm:ss')>>",
+				"Author: <<author>> - <<initials>> - ( <<authoremail>> )",
+				"-----",
+				"Last Modified: <<dateformat('dddd, DD/MM/YYYY HH:mm:ss')>>",
+				"Modified By: <<author>> - <<initials>> - ( <<authoremail>> )",
+				"-----",
+                "Type: Function Stored_Procedure Table Trigger",
+                "Description: ",
+                "Parameters: ",
+                "   NA",
+                "   NA",
+                "Return Value: ",
+                "   NA",
+                "   NA",
+                "-----",
+                "Programming Notes: ",
+                "",
+                "-----",
+				"HISTORY:",
+				"Date               \tBy\tComments",
+				"-------------------\t---\t---------------------------------------------------------"
+			],
+			"changeLogCaption": "HISTORY",
+			"changeLogHeaderLineCount": 2,
+			"changeLogEntryTemplate": [
+				"",
+				"<<dateformat(DD/MM/YYYY HH:mm:ss)>>\t<<initials>>\t"
+			],
+			"changeLogNaturalOrder": false,
+			"changeLogFooterLineCount": 0
+		}
+    ],

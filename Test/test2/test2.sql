@@ -20,7 +20,7 @@
 
 # Object Details:
     Module: Core
-    
+
     Schema_Name: lu
     Object_Name: WorkCentres
     Description: This is table description
@@ -53,10 +53,10 @@
         :::
     </diagram>
 
-<change_log>
 # Change_Log:
-Date                | By |	Comments
--------------------	| -- |	---------------------------------------------------------
+<change_log>
+Date                | By | Comments
+------------------- | -- | ---------------------------------------------------------
 
 -----
 </change_log>
