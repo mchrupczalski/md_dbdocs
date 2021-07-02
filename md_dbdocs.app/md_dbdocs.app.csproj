@@ -135,7 +135,10 @@
     <Content Include="Resources\invalid.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SQL\dbdocs.FilesInfo.sql">
+    <Content Include="SQL\dbdocs.DbDocsMinorObjects.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL\dbdocs.DbDocsMajorObjects.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="SQL\dbdocs.MajorObjectsInfo.sql">
@@ -147,7 +150,10 @@
     <Content Include="SQL\dbdocs.ObjectTypes.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="SQL\dbdocs.spAddFileInfo.sql">
+    <Content Include="SQL\dbdocs.spAddDbDocsMinorObjects.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL\dbdocs.spAddDbDocsMajorObjects.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="SQL\dbo.dbdocs_CleanUpSchema.sql">

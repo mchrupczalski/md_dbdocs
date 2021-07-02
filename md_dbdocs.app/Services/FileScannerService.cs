@@ -54,29 +54,70 @@ namespace md_dbdocs.app.Services
 
         private void SendToServer(List<ProjectObjectModel> objList)
         {
-            const string procAddInfo = "dbdocs.spAddFileInfo";
+            const string procAddMajor = "dbdocs.spAddDbDocsMajorObjects";
+            const string procAddMinor = "dbdocs.spAddDbDocsMinorObjects";
 
             using (var dal = new DataAccess.DataAccess(ConnectionStringHelper.GetConnectionString(_configModel)))
             {
                 foreach (var item in objList)
                 {
-                    // populate FilesInfo
+                    // populate dbdocs Major Objects Info
+                    string majorObjDesc = item.HeaderModel != null ? item.HeaderModel.Description : string.Empty;
+
                     var parameters = new List<SqlParameter>()
                     {
                         new SqlParameter(){ ParameterName = "@FileName", Value = item.FileInfo.Name },
-                        new SqlParameter(){ ParameterName = "@FilePath", Value = item.FileInfo.FullName },
                         new SqlParameter(){ ParameterName = "@ObjectType", Value = item.CreateObjectType },
                         new SqlParameter(){ ParameterName = "@ObjectSchema", Value = item.CreateObjectSchema },
                         new SqlParameter(){ ParameterName = "@ObjectName", Value = item.CreateObjectName },
-                        new SqlParameter(){ ParameterName = "@HasTagDbDocs", Value = item.HasTagDbDocs },
-                        new SqlParameter(){ ParameterName = "@HasTagDiagram", Value = item.HasTagDiagram },
-                        new SqlParameter(){ ParameterName = "@HasTagChangeLog", Value = item.HasTagChangeLog }
+                        new SqlParameter(){ ParameterName = "@ObjectDesc", Value = majorObjDesc }
                     };
 
-                    dal.ExecuteProcedure(procAddInfo, parameters);
+                    dal.ExecuteProcedure(procAddMajor, parameters);
 
-                    // populate Exceptions
                     // populate Fields and Parameters info
+                    if (item.HeaderModel != null)
+                    {
+                        if ((item.HeaderModel.Fields.Count > 0) || (item.HeaderModel.Parameters.Count > 0))
+                        {
+                            string childTypeId = ""; // one of types in [dbdocs].[ObjectTypes]
+                            switch (item.CreateObjectType)
+                            {
+                                case "FUNCTION":
+                                    childTypeId = "PAR";
+                                    break;
+                                case "PROCEDURE":
+                                    childTypeId = "PAR";
+                                    break;
+                                case "TABLE":
+                                    childTypeId = "COL";
+                                    break;
+                                case "TYPE":
+                                    childTypeId = "TCOL";
+                                    break;
+                                case "VIEW":
+                                    childTypeId = "COL";
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            foreach (var field in item.HeaderModel.Fields)
+                            {
+                                parameters = new List<SqlParameter>()
+                            {
+                                new SqlParameter(){ ParameterName = "@MajorObjType", Value = item.CreateObjectType },
+                                new SqlParameter(){ ParameterName = "@MajorObjSchema", Value = item.CreateObjectSchema },
+                                new SqlParameter(){ ParameterName = "@MajorObjName", Value = item.CreateObjectName },
+                                new SqlParameter(){ ParameterName = "@ChildObjTypeId", Value = childTypeId },
+                                new SqlParameter(){ ParameterName = "@ChildObjName", Value = field.Key },
+                                new SqlParameter(){ ParameterName = "@ChildObjDesc", Value = field.Value }
+                            };
+
+                                dal.ExecuteProcedure(procAddMinor, parameters);
+                            }
+                        }
+                    }                    
                 }
             }
         }
@@ -207,13 +248,15 @@ namespace md_dbdocs.app.Services
             while (!reader.EndOfStream)
             {
                 line = reader.ReadLine();
-                createPos = line.ToUpper().IndexOf("CREATE");
+                createPos = line.ToUpper().IndexOf("CREATE ");
                 if (createPos > -1)
                 {
-                    // remove any double spacing and []
+                    // remove any double spacing sets of brackets "[]", "()"
                     line = ReplaceAllString("  ", " ", line);
-                    line.Replace("[", "");
-                    line.Replace("]", "");
+                    line = ReplaceAllString("[", "", line);
+                    line = ReplaceAllString("]", "", line);
+                    line = ReplaceAllString("(", "", line);
+                    line = ReplaceAllString(")", "", line);
 
                     string[] lineSplit = line.Split(' ');
 
@@ -233,8 +276,11 @@ namespace md_dbdocs.app.Services
 
                         // check how many part name (server.db.schema.name)
                         string[] nameSplit = objName.Split('.');
-                        objSchema = nameSplit[nameSplit.Length - 2];
-                        objName = nameSplit[nameSplit.Length - 1];
+                        if (nameSplit.Length > 1)
+                        {
+                            objSchema = nameSplit[nameSplit.Length - 2];
+                            objName = nameSplit[nameSplit.Length - 1];
+                        }                        
                     }
 
                     // attach properties if file contains definition for supported object
@@ -243,10 +289,10 @@ namespace md_dbdocs.app.Services
                         projFile.CreateObjectType = objType;
                         projFile.CreateObjectSchema = objSchema;
                         projFile.CreateObjectName = objName;
-                    }
 
-                    // CREATE found - stop scanning
-                    return;
+                        // CREATE found - stop scanning
+                        return;
+                    }                    
                 }
             }
         }
@@ -260,12 +306,14 @@ namespace md_dbdocs.app.Services
         /// <returns></returns>
         private string ReplaceAllString(string findOld, string replaceWith, string searchIn)
         {
-            while (searchIn.IndexOf(findOld) > -1)
+            string output = searchIn;
+
+            while (output.IndexOf(findOld) > -1)
             {
-                searchIn.Replace(findOld, replaceWith);
+                output = output.Replace(findOld, replaceWith);
             }
 
-            return searchIn;
+            return output;
         }
     }
 }

@@ -20,9 +20,11 @@
 
 # Object Details:
     Module: Core
+    
     Schema_Name: lu
     Object_Name: WorkCentres
     Description: This is table description
+
     Fields:
         WorkCentreId: ID of workcentre
         WorkCentreDesc: Workcentre desciption / name

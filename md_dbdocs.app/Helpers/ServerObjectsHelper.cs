@@ -23,8 +23,10 @@ namespace md_dbdocs.app.Helpers
             const string sqlObjTypesTableName = "dbdocs.ObjectTypes.sql";
             const string sqlMajorTableName = "dbdocs.MajorObjectsInfo.sql";
             const string sqlMinorTableName = "dbdocs.MinorObjectsInfo.sql";
-            const string sqlFilesInfo = "dbdocs.FilesInfo.sql";
-            const string sqlAddFileInfo = "dbdocs.spAddFileInfo.sql";
+            const string sqlDbDocsMajor = "dbdocs.DbDocsMajorObjects.sql";
+            const string sqlDbDocsMinor = "dbdocs.DbDocsMinorObjects.sql";
+            const string sqlAddDbdMajor = "dbdocs.spAddDbDocsMajorObjects.sql";
+            const string sqlAddDbdMinor = "dbdocs.spAddDbDocsMinorObjects.sql";
 
             bool allCreated = false;
             // clear old objects
@@ -40,10 +42,12 @@ namespace md_dbdocs.app.Helpers
             scripts.Add(GetSqlFile(sqlObjTypesTableName));
             scripts.Add(GetSqlFile(sqlMajorTableName));
             scripts.Add(GetSqlFile(sqlMinorTableName));
-            scripts.Add(GetSqlFile(sqlFilesInfo));
+            scripts.Add(GetSqlFile(sqlDbDocsMajor));
+            scripts.Add(GetSqlFile(sqlDbDocsMinor));
 
             // create procedure to upload project files details
-            scripts.Add(GetSqlFile(sqlAddFileInfo));
+            scripts.Add(GetSqlFile(sqlAddDbdMajor));
+            scripts.Add(GetSqlFile(sqlAddDbdMinor));
 
             // execute scripts
             ExecuteSqlScripts(scripts);

@@ -32,7 +32,7 @@ WITH CTE_Data AS(
         ,NULL           AS ObjectId_Secondary
         ,s.name         AS SchemaName
         ,s.name         AS ObjectName
-        ,'uSCH'         AS ObjectType
+        ,'SCH'          AS ObjectType
         ,'SCHEMA'       AS ObjectTypeDesc
         ,NULL           AS ObjectCreateDate
         ,NULL           AS ObjectModDate
@@ -50,7 +50,7 @@ WITH CTE_Data AS(
         ,t.user_type_id             AS ObjectId_Secondary
         ,s.name                     AS SchemaName
         ,t.name                     AS ObjectName
-        ,'uType'                    AS ObjectType
+        ,'TTYPE'                    AS ObjectType
         ,'TABLE_TYPE'               AS ObjectTypeDesc
         ,NULL                       AS ObjectCreateDate
         ,NULL                       AS ObjectModDate
