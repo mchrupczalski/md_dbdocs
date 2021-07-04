@@ -1,12 +1,9 @@
-﻿using md_dbdocs.app.DataAccess;
-using md_dbdocs.app.Models;
+﻿using md_dbdocs.app.Models;
 using md_dbdocs.app.Services;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace md_dbdocs.app.ViewModels
 {
@@ -43,9 +40,52 @@ namespace md_dbdocs.app.ViewModels
              * get object details from the server and add to ObjectModel
              */
 
+            /*
+             * Create dictionary with db objects, concat schema and object name for key
+             * Create dictionary with project files details
+             * Create Observable Collection of objects from both dictionaries
+             */
+            Dictionary<string, ServerObjectParentModel> serverObjects = GetServerObjects();
 
-            var scanner = new FileScannerService(_configModel);
-            scanner.PopulateProjectFilesInfoTable();
+
+            //var scanner = new FileScannerService(_configModel);
+            //scanner.PopulateProjectFilesInfoTable();
+        }
+
+        private Dictionary<string, ServerObjectParentModel> GetServerObjects()
+        {
+            const string sqlMajorObj = "GetParentObjects.sql";
+            const string sqlMinorObjCols = "GetColumnsInfo.sql";
+            const string sqlMinorObjCols_Replace = "<<TableId>>"; // placeholder to be replaced with value
+
+            // load query from file
+            string queryMajor = GetSqlFile(sqlMajorObj);
+
+            Dictionary<string, ServerObjectParentModel> serverObjects = new Dictionary<string, ServerObjectParentModel>();
+
+            using (var dal = new DataAccess.DataAccess(Helpers.ConnectionStringHelper.GetConnectionString(_configModel)))
+            {
+                List<ServerObjectParentModel> parentModels = dal.LoadDataModel<ServerObjectParentModel>(queryMajor);
+
+                foreach (var item in parentModels)
+                {
+                    // load object children details
+                    string queryColumns = GetSqlFile(sqlMinorObjCols).Replace(sqlMinorObjCols_Replace, item.ObjectId);
+                    item.ChildObjects = dal.LoadDataModel<ServerObjectChildModel>(queryColumns);
+
+                    string key = $"{ item.SchemaName }.{ item.ObjectName }";
+                    serverObjects.Add(key, item);
+                }
+            }
+
+            return serverObjects;
+        }
+
+        private string GetSqlFile(string fileName)
+        {
+            string sqlFilePath = Environment.CurrentDirectory + "\\SQL\\" + fileName;
+            FileInfo procFile = new FileInfo(sqlFilePath);
+            return procFile.OpenText().ReadToEnd();
         }
     }
 }

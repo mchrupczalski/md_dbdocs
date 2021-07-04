@@ -77,8 +77,9 @@
     <Compile Include="Helpers\ServerObjectsHelper.cs" />
     <Compile Include="Helpers\YamlSerializer.cs" />
     <Compile Include="Models\ConfigValidationModel.cs" />
-    <Compile Include="Models\ServerObjectModel.cs" />
+    <Compile Include="Models\ServerObjectParentModel.cs" />
     <Compile Include="Models\ProjectObjectModel.cs" />
+    <Compile Include="Models\ServerObjectChildModel.cs" />
     <Compile Include="Models\YamlModel\AuthorModel.cs" />
     <Compile Include="Models\YamlModel\DatesInfoModel.cs" />
     <Compile Include="Models\YamlModel\HeaderCommentModel.cs" />
@@ -157,6 +158,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="SQL\dbo.dbdocs_CleanUpSchema.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL\GetColumnsInfo.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SQL\GetParentObjects.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="Properties\Resources.resx">

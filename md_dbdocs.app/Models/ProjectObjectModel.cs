@@ -15,7 +15,7 @@ namespace md_dbdocs.app.Models
         public bool HasTagDiagram { get; set; }
         public bool HasTagChangeLog { get; set; }
         public HeaderCommentModel HeaderModel { get; set; }
-        public ServerObjectModel DbObjectModel { get; set; }
+        public ServerObjectParentModel DbObjectModel { get; set; }
         public List<Exception> ProcessingExceptions { get; set; }
 
         public ProjectObjectModel()

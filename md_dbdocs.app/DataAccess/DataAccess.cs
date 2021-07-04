@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dapper;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -21,6 +22,21 @@ namespace md_dbdocs.app.DataAccess
         }
 
         public void Dispose(){}
+
+        /// <summary>
+        /// Loads the data model.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query">The query.</param>
+        /// <returns></returns>
+        public List<T> LoadDataModel<T>(string query)
+        {
+            using (IDbConnection connection = new SqlConnection(_connectionString))
+            {
+                List<T> rows = connection.Query<T>(query, null, null, true, null, CommandType.Text).ToList();
+                return rows;
+            }
+        }
 
         /// <summary>
         /// Run text query
