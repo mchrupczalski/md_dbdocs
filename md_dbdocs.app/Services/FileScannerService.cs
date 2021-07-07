@@ -20,8 +20,10 @@ namespace md_dbdocs.app.Services
         /// <summary>
         /// Scans all files in Project and populates server table with files information.
         /// </summary>
-        public void PopulateProjectFilesInfoTable()
+        public Dictionary<string, ProjectObjectModel> GetProjectObjects()
         {
+            Dictionary<string, ProjectObjectModel> objDic = new Dictionary<string, ProjectObjectModel>();
+
             var objList = new List<ProjectObjectModel>();
 
             // get list of files
@@ -42,91 +44,19 @@ namespace md_dbdocs.app.Services
                     // check file again and look for tags
                     GetDbDocsTags(projFile);
 
+                    // add to dictionary
                     objList.Add(projFile);
+
+                    string key = $"{ projFile.CreateObjectSchema.ToLower() }.{ projFile.CreateObjectName.ToLower() }";
+                    objDic.Add(key, projFile);
                 }
             }
 
-            // send objects details to sql server
-            SendToServer(objList);
+            return objDic;
+            
         }
 
-        private void SendToServer(List<ProjectObjectModel> objList)
-        {
-            const string procAddMajor = "dbdocs.spAddDbDocsMajorObjects";
-            const string procAddMinor = "dbdocs.spAddDbDocsMinorObjects";
-
-            using (var dal = new DataAccess.DataAccess(ConnectionStringHelper.GetConnectionString(_configModel)))
-            {
-                foreach (var item in objList)
-                {
-                    // populate dbdocs Major Objects Info
-                    string majorObjDesc = item.HeaderModel != null && item.HeaderModel.Description != null ? item.HeaderModel.Description : string.Empty;
-                    string majorObjModule = item.HeaderModel != null && item.HeaderModel.Module != null ? item.HeaderModel.Module : string.Empty;
-
-                    var parameters = new List<SqlParameter>()
-                    {
-                        new SqlParameter(){ ParameterName = "@FileName", Value = item.FileInfo.Name },
-                        new SqlParameter(){ ParameterName = "@ObjectType", Value = item.CreateObjectType },
-                        new SqlParameter(){ ParameterName = "@ObjectSchema", Value = item.CreateObjectSchema },
-                        new SqlParameter(){ ParameterName = "@ObjectName", Value = item.CreateObjectName },
-                        new SqlParameter(){ ParameterName = "@ObjectDesc", Value = majorObjDesc },
-                        new SqlParameter(){ ParameterName = "@ObjectModule", Value = majorObjModule },
-                    };
-
-                    dal.ExecuteProcedure(procAddMajor, parameters);
-
-                    // populate Fields and Parameters info
-                    if ((item.HeaderModel != null))
-                    {
-                        if ((item.HeaderModel.Fields.Count > 0) || (item.HeaderModel.Parameters.Count > 0))
-                        {
-                            string childTypeId = ""; // one of types in [dbdocs].[ObjectTypes]
-                            switch (item.CreateObjectType)
-                            {
-                                case "FUNCTION":
-                                    childTypeId = "PAR";
-                                    break;
-                                case "PROCEDURE":
-                                    childTypeId = "PAR";
-                                    break;
-                                case "TABLE":
-                                    childTypeId = "COL";
-                                    break;
-                                case "TYPE":
-                                    childTypeId = "TCOL";
-                                    break;
-                                case "VIEW":
-                                    childTypeId = "COL";
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            // select not empty dictionary and process all info
-                            Dictionary<string, string> childrenDic = item.HeaderModel.Fields.Count > 0 ? item.HeaderModel.Fields : item.HeaderModel.Parameters;
-                            foreach (var field in childrenDic)
-                            {
-                                // add @ prefix if object type is FUN or PROC and @ not set already
-                                string childName = childTypeId == "PAR" && field.Key.Substring(0, 1) != "@" ? $"@{ field.Key }" : field.Key;
-                                string childVal = field.Value;
-
-                                parameters = new List<SqlParameter>()
-                                {
-                                    new SqlParameter(){ ParameterName = "@MajorObjType", Value = item.CreateObjectType },
-                                    new SqlParameter(){ ParameterName = "@MajorObjSchema", Value = item.CreateObjectSchema },
-                                    new SqlParameter(){ ParameterName = "@MajorObjName", Value = item.CreateObjectName },
-                                    new SqlParameter(){ ParameterName = "@ChildObjTypeId", Value = childTypeId },
-                                    new SqlParameter(){ ParameterName = "@ChildObjName", Value = childName },
-                                    new SqlParameter(){ ParameterName = "@ChildObjDesc", Value = childVal }
-                                };
-
-                                dal.ExecuteProcedure(procAddMinor, parameters);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+  
 
         /// <summary>
         /// Scans project file in search for dbdocs tags and serialize to class.

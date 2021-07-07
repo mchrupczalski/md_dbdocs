@@ -18,9 +18,6 @@ VALUES ('FN'    ,'SQL_SCALAR_FUNCTION'              ,0,1,0,1)
       ,('SCH'   ,'SCHEMA'                           ,0,0,0,1)
       ,('TTYPE' ,'TABLE_TYPE'                       ,1,0,1,1)
       ,('R'     ,'DATABASE_ROLE'                    ,0,0,0,1)
-      ,('COL'   ,'COLUMN'                           ,0,0,0,0)
-      ,('TCOL'  ,'TYPE_COLUMN'                      ,0,0,1,0)
-      ,('PAR'   ,'PARAMETER'                        ,0,0,0,0)
 ;
 
 -- select major items details

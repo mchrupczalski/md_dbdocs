@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace md_dbdocs.app.Models
 {
@@ -18,6 +15,14 @@ namespace md_dbdocs.app.Models
         public DateTime ObjectCreateDate { get; set; }
         public DateTime ObjectModDate { get; set; }
         public string ExtendedDesc { get; set; }
-        public List<ServerObjectChildModel> ChildObjects { get; set; }
+        public List<ServerObjectChildColumnModel> ChildColumns { get; set; }
+        public List<ServerObjectChildParameterModel> ChildParameters { get; set; }
+
+        public ServerObjectParentModel()
+        {
+            // init empty lists
+            this.ChildColumns = new List<ServerObjectChildColumnModel>();
+            this.ChildParameters = new List<ServerObjectChildParameterModel>();
+        }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using md_dbdocs.app.Models;
-using md_dbdocs.app.Services;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data.SqlClient;
 using System.IO;
 
@@ -10,12 +10,11 @@ namespace md_dbdocs.app.ViewModels
     public class DetailsViewModel
     {
         private readonly ConfigModel _configModel;
-        private readonly SqlConnection _sqlConnection;
+        public ObservableCollection<SolutionObjectModel> SolutionObjects { get; set; }
 
-        public DetailsViewModel(ConfigModel configModel, SqlConnection sqlConnection)
+        public DetailsViewModel(ConfigModel configModel)
         {
             this._configModel = configModel;
-            _sqlConnection = sqlConnection;
 
             LoadDetails();
         }
@@ -47,9 +46,54 @@ namespace md_dbdocs.app.ViewModels
              */
             Dictionary<string, ServerObjectParentModel> serverObjects = GetServerObjects();
 
+            var fs = new Services.FileScannerService(_configModel);
+            Dictionary<string, ProjectObjectModel> projectObjects = fs.GetProjectObjects();
 
-            //var scanner = new FileScannerService(_configModel);
-            //scanner.PopulateProjectFilesInfoTable();
+            this.SolutionObjects = MatchObjects(serverObjects, projectObjects);
+
+
+        }
+
+        private ObservableCollection<SolutionObjectModel> MatchObjects(Dictionary<string, ServerObjectParentModel> serverObjects, Dictionary<string, ProjectObjectModel> projectObjects)
+        {
+            ObservableCollection<SolutionObjectModel> output = new ObservableCollection<SolutionObjectModel>();
+
+            // loop on all server objects
+            foreach (var serverObj in serverObjects)
+            {
+                SolutionObjectModel solutionObject = new SolutionObjectModel
+                {
+                    // add server object
+                    ServerObjectModel = serverObj.Value
+                };
+
+                // find matching projObject
+                string keyServer = serverObj.Key;
+                if (projectObjects.ContainsKey(keyServer))
+                {
+                    solutionObject.ProjectObjectModel = projectObjects[keyServer];
+                    projectObjects.Remove(keyServer);
+                }
+
+                // remove from dict
+                serverObjects.Remove(keyServer);
+
+                output.Add(solutionObject);
+            }
+
+            // loop on all project objects if any remain
+            foreach (var projObj in projectObjects)
+            {
+                SolutionObjectModel solutionObject = new SolutionObjectModel
+                {
+                    ProjectObjectModel = projObj.Value
+                };
+
+                projectObjects.Remove(projObj.Key);
+                output.Add(solutionObject);
+            }
+
+            return output;
         }
 
         private Dictionary<string, ServerObjectParentModel> GetServerObjects()
@@ -57,6 +101,8 @@ namespace md_dbdocs.app.ViewModels
             const string sqlMajorObj = "GetParentObjects.sql";
             const string sqlMinorObjCols = "GetColumnsInfo.sql";
             const string sqlMinorObjCols_Replace = "<<TableId>>"; // placeholder to be replaced with value
+            const string sqlMinorObjParam = "GetParametersInfo.sql";
+            const string sqlMinorObjParam_Replace = "<<ProcedureId>>"; // placeholder to be replaced with value
 
             // load query from file
             string queryMajor = GetSqlFile(sqlMajorObj);
@@ -69,12 +115,36 @@ namespace md_dbdocs.app.ViewModels
 
                 foreach (var item in parentModels)
                 {
-                    // load object children details
-                    string queryColumns = GetSqlFile(sqlMinorObjCols).Replace(sqlMinorObjCols_Replace, item.ObjectId);
-                    item.ChildObjects = dal.LoadDataModel<ServerObjectChildModel>(queryColumns);
+                    // pick a query to run based on item type
+                    string queryChildren = "";
+                    string replaceTag = "";
+                    string query = "";
+                    switch (item.ObjectId.ToUpper())
+                    {
+                        case "FN":      // SQL_SCALAR_FUNCTION
+                        case "IF":      // SQL_INLINE_TABLE_VALUED_FUNCTION
+                        case "TF":      // SQL_TABLE_VALUED_FUNCTION
+                        case "P":       // SQL_STORED_PROCEDURE
+                            queryChildren = sqlMinorObjParam;
+                            replaceTag = sqlMinorObjParam_Replace;
+                            query = GetSqlFile(queryChildren).Replace(replaceTag, item.ObjectId);
+                            item.ChildParameters = dal.LoadDataModel<ServerObjectChildParameterModel>(query);
+                            break;
+                        case "U":       // USER_TABLE
+                        case "V":       // VIEW
+                        case "TTYPE":   // TABLE_TYPE
+                            queryChildren = sqlMinorObjCols;
+                            replaceTag = sqlMinorObjCols_Replace;
+                            query = GetSqlFile(queryChildren).Replace(replaceTag, item.ObjectId);
+                            item.ChildColumns = dal.LoadDataModel<ServerObjectChildColumnModel>(query);
+                            break;
+                        default:
+                            break;
+                    }
 
-                    string key = $"{ item.SchemaName }.{ item.ObjectName }";
+                    string key = $"{ item.SchemaName.ToLower() }.{ item.ObjectName.ToLower() }";
                     serverObjects.Add(key, item);
+
                 }
             }
 

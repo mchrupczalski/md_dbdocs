@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 namespace md_dbdocs.app.Models
 {
-    public class ServerObjectChildModel
+    public class ServerObjectChildColumnModel
     {
         public int ColumnId { get; set; }
         public string ColumnName { get; set; }
         public string DataType { get; set; }
         public int MaxLen { get; set; }
+        public int Precision { get; set; }
         public int Scale { get; set; }
         public bool IsNullable { get; set; }
         public bool IsIdentity { get; set; }
