@@ -9,7 +9,7 @@ namespace md_dbdocs.app.Helpers
     public static class SqlObjectTypeTranslator
     {    
         // this takes object type as input from both server and project files and returns Id for it
-        public string GetObjectTypeId(string inputString)
+        public static string GetObjectTypeId(string inputString)
         {
             /* project files
              * FUNCTION
@@ -43,26 +43,27 @@ namespace md_dbdocs.app.Helpers
              * SC - Schema
              */
 
-            string[] functions = { "FUNCTION", "FN", "SQL_SCALAR_FUNCTION", "IF", "SQL_INLINE_TABLE_VALUED_FUNCTION" };
-            string[] procedures = { "PROCEDURE", "P", "SQL_STORED_PROCEDURE" };
-            string[] roles = { "ROLE", "R", "DATABASE_ROLE" };
-            string[] schemas = { "SCHEMA", "SCH" };
-            string[] tables = { "TABLE", "U", "USER_TABLE" };
-            string[] types = { "TYPE", "TTYPE", "TABLE_TYPE" };
-            string[] views = { "VIEW", "V" };
+            string[] functions = { "FUNCTION", "FN", "SQL_SCALAR_FUNCTION", "IF", "SQL_INLINE_TABLE_VALUED_FUNCTION" }; // out: FN
+            string[] procedures = { "PROCEDURE", "P", "SQL_STORED_PROCEDURE" }; // out: SP
+            string[] roles = { "ROLE", "R", "DATABASE_ROLE" }; // out: RL
+            string[] schemas = { "SCHEMA", "SCH" }; // out: SC
+            string[] tables = { "TABLE", "U", "USER_TABLE" }; // out: TB
+            string[] types = { "TYPE", "TTYPE", "TABLE_TYPE" }; // out: TT
+            string[] views = { "VIEW", "V" }; // out: VW
 
             string output = "";
+            string inputUp = inputString.ToUpper().Trim();
 
 
-            if (functions.Contains(inputString.ToUpper()))
-            {
-                output = "FN";
-            }
-            else if (procedures.Contains)
-            {
+            if (functions.Contains(inputUp)){output = "FN";}
+            else if (procedures.Contains(inputUp)){output = "SP";}
+            else if (roles.Contains(inputUp)) { output = "RL"; }
+            else if (schemas.Contains(inputUp)) { output = "SC"; }
+            else if (tables.Contains(inputUp)) { output = "TB"; }
+            else if (types.Contains(inputUp)) { output = "TT"; }
+            else if (views.Contains(inputUp)) { output = "VW"; }
 
-            }
-
+            return output;
         }
     }
 }

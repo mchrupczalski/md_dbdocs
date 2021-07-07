@@ -1,5 +1,5 @@
 {
-  "server": "VTISCLESQL003\\INSTANCE01",
+  "server": "HOME-WORKHORSE\\DEVSERVER",
   "dataBase": "PDM",
   "useWindowsAuth": false,
   "sqlUserName": "ChrupczM",

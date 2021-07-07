@@ -1,22 +1,42 @@
-﻿using md_dbdocs.app.Models;
+﻿using md_dbdocs.app.Helpers;
+using md_dbdocs.app.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IO;
 
 namespace md_dbdocs.app.ViewModels
 {
-    public class DetailsViewModel
+    public class DetailsViewModel : BindableBase
     {
         private readonly ConfigModel _configModel;
-        public ObservableCollection<SolutionObjectModel> SolutionObjects { get; set; }
+        private ObservableCollection<SolutionObjectModel> _selectedList;
+
+        public ObservableCollection<SolutionObjectModel> SolutionObjects { get; set; }      // objects with match
+        public ObservableCollection<SolutionObjectModel> ServerObjects { get; set; }        // server objects without match
+        public ObservableCollection<SolutionObjectModel> ProjectObjects { get; set; }       // project objects without match
+        public ObservableCollection<SolutionObjectModel> SelectedList { get => _selectedList; set { _selectedList = value; base.OnPropertyChanged(); } }
+
+        public RelayCommand ChangeListCommand { get; private set; }
 
         public DetailsViewModel(ConfigModel configModel)
         {
             this._configModel = configModel;
-
+            this.ChangeListCommand = new RelayCommand(ChangeListExecute, ChangeListCanExecute);
+            
             LoadDetails();
+            this.SelectedList = this.SolutionObjects;
+        }
+
+        private void ChangeListExecute(object obj)
+        {
+            this.SelectedList = (ObservableCollection<SolutionObjectModel>)obj;
+        }
+
+        private bool ChangeListCanExecute(object obj)
+        {
+            return true;
         }
 
         public void LoadDetails()
@@ -49,51 +69,57 @@ namespace md_dbdocs.app.ViewModels
             var fs = new Services.FileScannerService(_configModel);
             Dictionary<string, ProjectObjectModel> projectObjects = fs.GetProjectObjects();
 
-            this.SolutionObjects = MatchObjects(serverObjects, projectObjects);
-
+            MatchObjects(serverObjects, projectObjects);
 
         }
 
-        private ObservableCollection<SolutionObjectModel> MatchObjects(Dictionary<string, ServerObjectParentModel> serverObjects, Dictionary<string, ProjectObjectModel> projectObjects)
+        /// <summary>
+        /// Matches server and project objects.
+        /// </summary>
+        /// <param name="serverObjects">The server objects.</param>
+        /// <param name="projectObjects">The project objects.</param>
+        private void MatchObjects(Dictionary<string, ServerObjectParentModel> serverObjects, Dictionary<string, ProjectObjectModel> projectObjects)
         {
-            ObservableCollection<SolutionObjectModel> output = new ObservableCollection<SolutionObjectModel>();
+            ObservableCollection<SolutionObjectModel> solutionObj = new ObservableCollection<SolutionObjectModel>();
+            ObservableCollection<SolutionObjectModel> serverObj = new ObservableCollection<SolutionObjectModel>();
+            ObservableCollection<SolutionObjectModel> projectObj = new ObservableCollection<SolutionObjectModel>();
 
             // loop on all server objects
-            foreach (var serverObj in serverObjects)
+            foreach (var obj in serverObjects)
             {
-                SolutionObjectModel solutionObject = new SolutionObjectModel
-                {
-                    // add server object
-                    ServerObjectModel = serverObj.Value
-                };
+                SolutionObjectModel solutionObject = new SolutionObjectModel();
 
                 // find matching projObject
-                string keyServer = serverObj.Key;
+                string keyServer = obj.Key;
                 if (projectObjects.ContainsKey(keyServer))
                 {
+                    // if matched add both object to solution model, and add solution model to collection
+                    solutionObject.ServerObjectModel = obj.Value;
                     solutionObject.ProjectObjectModel = projectObjects[keyServer];
+
                     projectObjects.Remove(keyServer);
+                    solutionObj.Add(solutionObject);
                 }
-
-                // remove from dict
-                serverObjects.Remove(keyServer);
-
-                output.Add(solutionObject);
-            }
-
-            // loop on all project objects if any remain
-            foreach (var projObj in projectObjects)
-            {
-                SolutionObjectModel solutionObject = new SolutionObjectModel
+                else
                 {
-                    ProjectObjectModel = projObj.Value
-                };
-
-                projectObjects.Remove(projObj.Key);
-                output.Add(solutionObject);
+                    // if not matched, add server obj to not matched collection
+                    solutionObject.ServerObjectModel = obj.Value;
+                    serverObj.Add(solutionObject);
+                }
             }
 
-            return output;
+            // loop on all project objects if any remain, and add to not matched project objects collection
+            foreach (var obj in projectObjects)
+            {
+                SolutionObjectModel solutionObject = new SolutionObjectModel();
+                solutionObject.ProjectObjectModel = obj.Value;
+                projectObj.Add(solutionObject);
+            }
+
+            // assign to properties
+            this.SolutionObjects = solutionObj;
+            this.ServerObjects = serverObj;
+            this.ProjectObjects = projectObj;
         }
 
         private Dictionary<string, ServerObjectParentModel> GetServerObjects()
@@ -142,7 +168,8 @@ namespace md_dbdocs.app.ViewModels
                             break;
                     }
 
-                    string key = $"{ item.SchemaName.ToLower() }.{ item.ObjectName.ToLower() }";
+                    string key = $"{ Helpers.SqlObjectTypeTranslator.GetObjectTypeId(item.ObjectTypeId) }.{ item.SchemaName.ToLower() }.{ item.ObjectName.ToLower() }";
+                    Debug.Print(key);
                     serverObjects.Add(key, item);
 
                 }

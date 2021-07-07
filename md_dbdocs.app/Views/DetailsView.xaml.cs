@@ -1,18 +1,5 @@
 ﻿using md_dbdocs.app.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace md_dbdocs.app.Views
 {
@@ -21,12 +8,13 @@ namespace md_dbdocs.app.Views
     /// </summary>
     public partial class DetailsView : UserControl
     {
-        private readonly DetailsViewModel viewModel;
+        private readonly DetailsViewModel _viewModel;
 
         public DetailsView(DetailsViewModel viewModel)
         {
             InitializeComponent();
-            this.viewModel = viewModel;
+            this._viewModel = viewModel;
+            this.DataContext = _viewModel;
         }
     }
 }

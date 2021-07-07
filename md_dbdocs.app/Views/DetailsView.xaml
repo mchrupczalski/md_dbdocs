@@ -4,9 +4,60 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:md_dbdocs.app.Views"
+             xmlns:vm="clr-namespace:md_dbdocs.app.ViewModels"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800" d:Background="White">
     <Grid>
-        <TextBlock Text="DETAILS"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!--#region Stats-->
+        <ListView Grid.Row="0" Grid.Column="0" Grid.RowSpan="2">
+            <ListViewItem>
+                <Button Command="{Binding ChangeListCommand}" CommandParameter="{Binding SolutionObjects}" Background="{x:Null}" BorderBrush="{x:Null}">
+                    <StackPanel Orientation="Horizontal" Margin="5">
+                        <TextBlock Text="Objects matched to source: " Margin="2"/>
+                        <TextBlock Text="{Binding SolutionObjects.Count}" Margin="2"/>
+                    </StackPanel>
+                </Button>
+            </ListViewItem>
+
+            <ListViewItem>
+                <Button Command="{Binding ChangeListCommand}" CommandParameter="{Binding ServerObjects}" BorderBrush="{x:Null}" Background="{x:Null}">
+                    <StackPanel Orientation="Horizontal" Margin="5">
+                        <TextBlock Text="Objects not matched to source: " Margin="2"/>
+                        <TextBlock Text="{Binding ServerObjects.Count}" Margin="2"/>
+                    </StackPanel>
+                </Button>                
+            </ListViewItem>
+
+            <ListViewItem>
+                <Button Command="{Binding ChangeListCommand}" CommandParameter="{Binding ProjectObjects}" BorderBrush="{x:Null}" Background="{x:Null}">
+                    <StackPanel Orientation="Horizontal" Margin="5">
+                        <TextBlock Text="Source not matched to objects: " Margin="2"/>
+                        <TextBlock Text="{Binding ProjectObjects.Count}" Margin="2"/>
+                    </StackPanel>
+                </Button>
+            </ListViewItem>
+        </ListView>
+        
+        <!--#region Selection list-->
+        <ListView Grid.Row="0" Grid.Column="1" ItemsSource="{Binding SelectedList}">
+            <ListView.View>
+                <GridView AllowsColumnReorder="False">
+                    <GridViewColumn Header="Object Type" DisplayMemberBinding="{Binding ProjectObjectModel.CreateObjectType}"/>
+                    <GridViewColumn Header="Object Schema" DisplayMemberBinding="{Binding ProjectObjectModel.CreateObjectSchema}"/>
+                    <GridViewColumn Header="Object Name" DisplayMemberBinding="{Binding ProjectObjectModel.CreateObjectName}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
     </Grid>
 </UserControl>

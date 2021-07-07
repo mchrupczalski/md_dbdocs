@@ -90,7 +90,7 @@ WITH CTE_Data AS(
          NULL           AS SchemaId
         ,p.principal_id AS ObjectId
         ,NULL           AS UserTypeId
-        ,NULL           AS SchemaName
+        ,p.name         AS SchemaName
         ,p.name         AS ObjectName
         ,p.[type]       AS ObjectTypeId
         ,p.type_desc    AS ObjectTypeDesc

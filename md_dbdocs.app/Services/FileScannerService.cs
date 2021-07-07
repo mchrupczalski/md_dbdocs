@@ -3,7 +3,6 @@ using md_dbdocs.app.Models;
 using md_dbdocs.app.Models.YamlModel;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.IO;
 
 namespace md_dbdocs.app.Services
@@ -18,8 +17,9 @@ namespace md_dbdocs.app.Services
         }
 
         /// <summary>
-        /// Scans all files in Project and populates server table with files information.
+        /// Gets the project objects.
         /// </summary>
+        /// <returns></returns>
         public Dictionary<string, ProjectObjectModel> GetProjectObjects()
         {
             Dictionary<string, ProjectObjectModel> objDic = new Dictionary<string, ProjectObjectModel>();
@@ -32,31 +32,55 @@ namespace md_dbdocs.app.Services
 
             foreach (FileInfo file in fileInfos)
             {
+                // ignore files from ./obj/ & ./bin/ folders
+                bool isDebugOrRelease = (file.FullName.ToLower().IndexOf("\\obj\\") >= 0) || (file.FullName.ToLower().IndexOf("\\bin\\") >= 0);
+
                 // second filter on sql files required as GetFiles also returning sqlproject, etc
-                if ((file.Extension == ".sql") && (file.Name.IndexOf(".publish.sql") == -1))
+                if ((file.Extension == ".sql") && (file.Name.IndexOf(".publish.sql") == -1) && !isDebugOrRelease)
                 {
                     var projFile = new ProjectObjectModel();
                     projFile.FileInfo = file;
 
                     // check if CREATE statement - get Obj Type, Schema and Name
-                    GetSqlCreateDetails(projFile);
+                    bool isCreate = GetSqlCreateDetails(projFile);
 
-                    // check file again and look for tags
-                    GetDbDocsTags(projFile);
+                    // skip file if it is not creating anything
+                    if (isCreate)
+                    {
+                        // check file again and look for tags
+                        GetDbDocsTags(projFile);
 
-                    // add to dictionary
-                    objList.Add(projFile);
+                        // add to dictionary
+                        objList.Add(projFile);
 
-                    string key = $"{ projFile.CreateObjectSchema.ToLower() }.{ projFile.CreateObjectName.ToLower() }";
-                    objDic.Add(key, projFile);
+                        // it should not happen, but an error occurs if duplicate object definition found
+                        string key = $"{ Helpers.SqlObjectTypeTranslator.GetObjectTypeId(projFile.CreateObjectType) }.{ projFile.CreateObjectSchema.ToLower() }.{ projFile.CreateObjectName.ToLower() }";
+                        try
+                        {
+                            objDic.Add(key, projFile);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ex.Message == "An item with the same key has already been added.")
+                            {
+                                // find duplicate file and show both in an mbox
+                                string fileOne = objDic[key].FileInfo.FullName;
+                                string msg = $"Whooops. Duplicate object definition found.\n" +
+                                             $"File one: { fileOne }\n\n" +
+                                             $"File two: { projFile.FileInfo.FullName }\n\n" +
+                                             $"The first file will be used for current run, the second file will be ignored.";
+                                System.Windows.MessageBox.Show(msg, "Duplicate found", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                            }
+                        }
+                    }                    
                 }
             }
 
             return objDic;
-            
+
         }
 
-  
+
 
         /// <summary>
         /// Scans project file in search for dbdocs tags and serialize to class.
@@ -171,8 +195,10 @@ namespace md_dbdocs.app.Services
         /// Gets the sql CREATE details.
         /// </summary>
         /// <param name="projFile">The proj file.</param>
-        private void GetSqlCreateDetails(ProjectObjectModel projFile)
+        private bool GetSqlCreateDetails(ProjectObjectModel projFile)
         {
+            bool output = false;
+
             List<string> supportedObjTypes = new List<string>()
             {
                 "FUNCTION","PROCEDURE","TABLE","TYPE","VIEW" /*,"ROLE","SCHEMA" --Commented out as CREATE signature differs from other types */
@@ -206,7 +232,7 @@ namespace md_dbdocs.app.Services
                     if (objType == "ROLE" || objType == "SCHEMA")
                     {
                         isSupported = true;
-                        objSchema = "N/A";
+                        objSchema = objName;
                     }
                     else if (supportedObjTypes.Contains(objType))
                     {
@@ -229,10 +255,13 @@ namespace md_dbdocs.app.Services
                         projFile.CreateObjectName = objName;
 
                         // CREATE found - stop scanning
-                        return;
+                        output = true;
+                        return output;
                     }
                 }
             }
+
+            return output;
         }
 
         /// <summary>
