@@ -10,7 +10,7 @@
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
             <TextBlock x:Name="iBoxLabel" HorizontalAlignment="Center" FontSize="12" FontWeight="Light" Margin="2" d:Text="Label"/>
             <TextBlock HorizontalAlignment="Center" FontSize="12" FontWeight="Light" Margin="2" Text=":"/>
-            <TextBlock x:Name="iBoxValue" HorizontalAlignment="Center" FontSize="12" FontWeight="SemiBold" Margin="2" d:Text="Value"/>
+            <TextBlock x:Name="iBoxValue" HorizontalAlignment="Center" FontSize="12" FontWeight="SemiBold" Margin="2" d:Text="ValueValueValueValue" TextWrapping="Wrap"/>
         </StackPanel>
     </Grid>
 </UserControl>

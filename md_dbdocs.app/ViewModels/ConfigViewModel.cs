@@ -3,10 +3,13 @@ using md_dbdocs.app.Helpers;
 using md_dbdocs.app.Models;
 using md_dbdocs.app.Services;
 using md_dbdocs.app.Views;
+using Microsoft.Win32;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
+using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 
 namespace md_dbdocs.app.ViewModels
 {
@@ -20,6 +23,7 @@ namespace md_dbdocs.app.ViewModels
 
         public RelayCommand ValidateCommand { get; private set; }
         public RelayCommand NavNextCommand { get; private set; }
+        public RelayCommand BrowseCommand { get; set; }
 
 
         public ConfigViewModel()
@@ -28,31 +32,59 @@ namespace md_dbdocs.app.ViewModels
             Config.Validation = new ObservableCollection<ConfigValidationModel>();
             this.ValidateCommand = new RelayCommand(ValidateExecute, ValidateCanExecute);
             this.NavNextCommand = new RelayCommand(NavNextExecute, NavNextCanExecute);
+            this.BrowseCommand = new RelayCommand(BrowseExecute, BrowseCanExecute);
         }
 
+        private void BrowseExecute(object obj = null)
+        {
+            string path = "";
+            var dialog = new OpenFileDialog();
+            dialog.Filter = "VS SQL Server Project | *.sqlproj";
+            dialog.Title = "Select sql project path.";
+            dialog.InitialDirectory = "C:\\";
+            dialog.RestoreDirectory = true;
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                path = System.IO.Directory.GetParent(dialog.FileName).ToString();
+            }
+
+            Config.SqlProjectRootPath = path;
+        }
+
+        private bool BrowseCanExecute(object obj) => true;
 
         private void NavNextExecute(object obj)
         {
-            // ToDo: add view for creating db object with selection to preserve them in the database
+            SaveConfig(Config);
 
-            // create database object
-            //var soHelp = new ServerObjectsHelper(ConnectionStringHelper.GetConnectionString(Config));
-            //soHelp.CreateServerObjects(); //ToDo: add to config validation
-
-
-            // ToDo: Simplify details model
-            //var dbCnx = new SqlServerDataAccess(Config);
-            //dbCnx.ConnectToDb();
             var detailsVm = new DetailsViewModel(Config);
             ViewNavigationService.ViewNav.Navigate(new DetailsView(detailsVm));
+        }
+
+        private void SaveConfig(ConfigModel config)
+        {
+            string configJson;
+
+            using (var s = new Helpers.JsonSerializer())
+            {
+                configJson = s.ToJson<ConfigModel>(config);
+            }
+
+            // delete existing file
+            File.Delete(_jsonConfigPath);
+
+            // create new file
+            File.WriteAllText(_jsonConfigPath, configJson);
         }
 
         private bool NavNextCanExecute(object obj)
         {
             bool isConnected = _config.Validation.Where(m => m.ItemId == "db").Select(m => m.IsValid).FirstOrDefault();
             bool isDbo = _config.Validation.Where(m => m.ItemId == "dbo").Select(m => m.IsValid).FirstOrDefault();
+            bool isProjectPath = _config.Validation.Where(m => m.ItemId == "root").Select(m => m.IsValid).FirstOrDefault();
 
-            return isConnected && isDbo;
+            return isConnected && isDbo && isProjectPath;
         }
 
         private bool ValidateCanExecute(object obj) => true;
@@ -88,6 +120,12 @@ namespace md_dbdocs.app.ViewModels
             Config.Validation.Add(validateUser);
 
             // check sql root path
+            var validateProjectPath = new ConfigValidationModel();
+            validateProjectPath.ItemId = "root";
+            validateProjectPath.ValidationItem = "SQL Project root path";
+            validateProjectPath.IsValid = !string.IsNullOrEmpty(Config.SqlProjectRootPath);
+            Config.Validation.Add(validateProjectPath);
+
             // check markdown-include config file
 
             // check prerequisite apps
@@ -98,14 +136,40 @@ namespace md_dbdocs.app.ViewModels
 
         private ConfigModel LoadConfig()
         {
-            StreamReader reader = new StreamReader(_jsonConfigPath);
-            string jsonText = reader.ReadToEnd();
+            ConfigModel config = new ConfigModel();
+            bool loaded = false;
+            int retry = 0;
 
-            ConfigModel config;
-            using (var s = new JsonSerializer())
+            while (!loaded && retry < 3)
             {
-                config = s.FromJson<ConfigModel>(jsonText);
+                try
+                {
+                    StreamReader reader = new StreamReader(_jsonConfigPath);
+                    string jsonText = reader.ReadToEnd();
+
+                    using (var s = new JsonSerializer())
+                    {
+                        config = s.FromJson<ConfigModel>(jsonText);
+                    }
+
+                    break;
+                }
+                catch (FileNotFoundException)
+                {
+                    // create blank config file
+                    SaveConfig(new ConfigModel());
+                    retry++;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
             }
+
+            
+
+            // create blank config file if config don't exists or serializer returned null
+
 
             return config;
         }

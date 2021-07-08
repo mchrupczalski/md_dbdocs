@@ -13,7 +13,6 @@ namespace md_dbdocs.app.Models
         private bool useSqlLogin;
         private string sqlUserName;
         private string sqlPassword;
-        private string markdownIncludeConfigFilePath;
         private string sqlProjectRootPath;
 
         [JsonProperty("server")]
@@ -30,9 +29,6 @@ namespace md_dbdocs.app.Models
 
         [JsonProperty("sqlPassword")]
         public string SqlPassword { get => sqlPassword; set { sqlPassword = value; base.OnPropertyChanged(); } }
-
-        [JsonProperty("markdownIncludeConfigFilePath")]
-        public string MarkdownIncludeConfigFilePath { get => markdownIncludeConfigFilePath; set { markdownIncludeConfigFilePath = value; base.OnPropertyChanged(); } }
 
         [JsonProperty("sqlProjectRootPath")]
         public string SqlProjectRootPath { get => sqlProjectRootPath; set { sqlProjectRootPath = value; base.OnPropertyChanged(); } }

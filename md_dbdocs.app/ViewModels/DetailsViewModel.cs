@@ -5,40 +5,121 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace md_dbdocs.app.ViewModels
 {
     public class DetailsViewModel : BindableBase
     {
         private readonly ConfigModel _configModel;
-        private ObservableCollection<SolutionObjectModel> _selectedList;
         private SolutionObjectModel _selectedItem;
+        private ObservableCollection<SolutionObjectModel> _solutionObjects;
+        private ObservableCollection<ObjectChildModel> _objectChildren;
 
-        public ObservableCollection<SolutionObjectModel> SolutionObjects { get; set; }      // objects with match
-        public ObservableCollection<SolutionObjectModel> ServerObjects { get; set; }        // server objects without match
-        public ObservableCollection<SolutionObjectModel> ProjectObjects { get; set; }       // project objects without match
-        public ObservableCollection<SolutionObjectModel> SelectedList { get => _selectedList; set { _selectedList = value; base.OnPropertyChanged(); } }
+        public ObservableCollection<SolutionObjectModel> SolutionObjects { get => _solutionObjects; set { _solutionObjects = value; base.OnPropertyChanged(); } }      // objects with match
         public SolutionObjectModel SelectedItem { get => _selectedItem; set { _selectedItem = value; base.OnPropertyChanged(); } }
 
-        public RelayCommand ChangeListCommand { get; private set; }
+        public ObservableCollection<ObjectChildModel> ObjectChildren { get => _objectChildren; set { _objectChildren = value; base.OnPropertyChanged(); } }
+
         public RelayCommand SelectItemCommend { get; private set; }
+
+        public int MatchedToSource { get => SolutionObjects.Count(p => p.IsServer && p.IsProject); }
+        public int NotMatchedToSource { get => SolutionObjects.Count(p => p.IsServer && !p.IsProject); }
+        public int NotMatchedToObject { get => SolutionObjects.Count(p => !p.IsServer && p.IsProject); }
 
         public DetailsViewModel(ConfigModel configModel)
         {
             this._configModel = configModel;
-            this.ChangeListCommand = new RelayCommand(ChangeListExecute, ChangeListCanExecute);
             this.SelectItemCommend = new RelayCommand(SelectItemExecute, SelectItemCanExecute);
 
             LoadDetails();
-            this.SelectedList = this.SolutionObjects;
-            this.SelectedItem = this.SelectedList[0];
+            this.SelectedItem = this.SolutionObjects[0];
         }
 
+        private void SelectItemExecute(object obj)
+        {
+            var item = (SolutionObjectModel)obj;
+            this.SelectedItem = item;
+            this.ObjectChildren = GetChildrenInfo(item);
+        }
 
+        private ObservableCollection<ObjectChildModel> GetChildrenInfo(SolutionObjectModel solutionObjectModel)
+        {
+            var outList = new ObservableCollection<ObjectChildModel>();
 
-        private void ChangeListExecute(object obj) => this.SelectedList = (ObservableCollection<SolutionObjectModel>)obj;
-        private void SelectItemExecute(object obj) => this.SelectedItem = (SolutionObjectModel)obj;
-        private bool ChangeListCanExecute(object obj) => true;
+            // loop on columns and parameters in server object and add to list
+            foreach (var item in solutionObjectModel.ServerObjectModel.ChildColumns)
+            {
+                var child = new ObjectChildModel
+                {
+                    Type = "COLUMN",
+                    IsServer = true,
+                    Name = item.ColumnName,
+                    ServerDesc = item.ExtendedDesc,
+                    DataType = item.DataType
+                };
+
+                outList.Add(child);
+            }
+
+            foreach (var item in solutionObjectModel.ServerObjectModel.ChildParameters)
+            {
+                var child = new ObjectChildModel
+                {
+                    Type = "PARAMETER",
+                    IsServer = true,
+                    Name = item.ParameterName,
+                    ServerDesc = item.ExtendedDesc,
+                    DataType = item.DataType
+                };
+
+                outList.Add(child);
+            }
+
+            // loop on columns and parameters in project object, find item with the same name and extend info, or add to list if not found
+            foreach (KeyValuePair<string, string> item in solutionObjectModel.ProjectObjectModel.HeaderModel.Fields)
+            {
+                var listItem = outList.Where(i => i.Name == item.Key).FirstOrDefault();
+                if (listItem == null)
+                {
+                    var child = new ObjectChildModel
+                    {
+                        Type = "COLUMN",
+                        IsProject = true,
+                        Name = item.Key,
+                        ProjectDesc = item.Value
+                    };
+                }
+                else
+                {
+                    listItem.IsProject = true;
+                    listItem.ProjectDesc = item.Value;
+                }
+            }
+
+            foreach (KeyValuePair<string, string> item in solutionObjectModel.ProjectObjectModel.HeaderModel.Parameters)
+            {
+                var listItem = outList.Where(i => i.Name == item.Key).FirstOrDefault();
+                if (listItem == null)
+                {
+                    var child = new ObjectChildModel
+                    {
+                        Type = "PARAMETER",
+                        IsProject = true,
+                        Name = item.Key,
+                        ProjectDesc = item.Value
+                    };
+                }
+                else
+                {
+                    listItem.IsProject = true;
+                    listItem.ProjectDesc = item.Value;
+                }
+            }
+
+            return outList;
+        }
+
         private bool SelectItemCanExecute(object obj) => true;
 
         public void LoadDetails()
@@ -83,8 +164,6 @@ namespace md_dbdocs.app.ViewModels
         private void MatchObjects(Dictionary<string, ServerObjectParentModel> serverObjects, Dictionary<string, ProjectObjectModel> projectObjects)
         {
             ObservableCollection<SolutionObjectModel> solutionObj = new ObservableCollection<SolutionObjectModel>();
-            ObservableCollection<SolutionObjectModel> serverObj = new ObservableCollection<SolutionObjectModel>();
-            ObservableCollection<SolutionObjectModel> projectObj = new ObservableCollection<SolutionObjectModel>();
 
             // loop on all server objects
             foreach (var obj in serverObjects)
@@ -100,28 +179,28 @@ namespace md_dbdocs.app.ViewModels
                     solutionObject.ProjectObjectModel = projectObjects[keyServer];
 
                     projectObjects.Remove(keyServer);
-                    solutionObj.Add(solutionObject);
                 }
                 else
                 {
-                    // if not matched, add server obj to not matched collection
+                    // if not matched, add project obj as null
                     solutionObject.ServerObjectModel = obj.Value;
-                    serverObj.Add(solutionObject);
+                    solutionObject.ProjectObjectModel = null;
                 }
+
+                solutionObj.Add(solutionObject);
             }
 
-            // loop on all project objects if any remain, and add to not matched project objects collection
+            // loop on all project objects if any remain
             foreach (var obj in projectObjects)
             {
                 SolutionObjectModel solutionObject = new SolutionObjectModel();
                 solutionObject.ProjectObjectModel = obj.Value;
-                projectObj.Add(solutionObject);
+                solutionObject.ServerObjectModel = null;
+                solutionObj.Add(solutionObject);
             }
 
             // assign to properties
             this.SolutionObjects = solutionObj;
-            this.ServerObjects = serverObj;
-            this.ProjectObjects = projectObj;
         }
 
         private Dictionary<string, ServerObjectParentModel> GetServerObjects()

@@ -16,8 +16,158 @@
         <cnv:BoolToImageConverter x:Key="BoolToImageConverter" FalseImage="/Resources/invalid.png" TrueImage="/Resources/valid.png" />
         <cnv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>
-    
+
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="3*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        
+        <!--#region Stats and list of objects-->
+        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" BorderBrush="DarkGray" BorderThickness="0.5" Background="Black">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <ctrl:InfoBox SetBoxLabel="Objects matched to source" SetBoxValue="{Binding MatchedToSource}" Margin="10 0" FontSize="16" Foreground="White"/>
+                <ctrl:InfoBox SetBoxLabel="Objects not matched to source" SetBoxValue="{Binding NotMatchedToSource}" Margin="10 0" FontSize="16" Foreground="White"/>
+                <ctrl:InfoBox SetBoxLabel="Sources not matched to object" SetBoxValue="{Binding NotMatchedToObject}" Margin="10 0" FontSize="16" Foreground="White"/>
+            </StackPanel>
+        </Border>
+
+        <DataGrid x:Name="solutionObjects" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" AutoGenerateColumns="False" 
+                  ItemsSource="{Binding SolutionObjects}" HorizontalScrollBarVisibility="Auto">
+            <DataGrid.Resources>
+                <DataTemplate x:Key="imageCol_db">
+                    <Image Source="{Binding IsServer, Converter={StaticResource BoolToImageConverter}}" Width="16" Height="16" />
+                </DataTemplate>
+
+                <DataTemplate x:Key="imageCol_src">
+                    <Image Source="{Binding IsProject, Converter={StaticResource BoolToImageConverter}}" Width="16" Height="16" />
+                </DataTemplate>
+
+                <DataTemplate x:Key="dbdocs_tag">
+                    <Image Source="{Binding ProjectObjectModel.HasTagDbDocs, Converter={StaticResource BoolToImageConverter}}" Width="16" Height="16" />
+                </DataTemplate>
+            </DataGrid.Resources>
+
+            <DataGrid.Columns>
+                <DataGridTemplateColumn CellTemplate="{StaticResource ResourceKey=imageCol_db}" Header="db"/>
+                <DataGridTemplateColumn CellTemplate="{StaticResource ResourceKey=imageCol_src}" Header="src"/>
+                <DataGridTextColumn Header="Module" IsReadOnly="True" Binding="{Binding ProjectObjectModel.HeaderCommentModel.Module}"/>
+                <DataGridTextColumn Header="Type" IsReadOnly="True" Binding="{Binding ServerObjectModel.ObjectTypeId}"/>
+                <DataGridTextColumn Header="Schema" IsReadOnly="True" Binding="{Binding ServerObjectModel.SchemaName}"/>
+                <DataGridTextColumn Header="Name" IsReadOnly="True" Binding="{Binding ServerObjectModel.ObjectName}"/>
+                <DataGridTemplateColumn CellTemplate="{StaticResource ResourceKey=dbdocs_tag}" Header="dbdocs"/>
+                <DataGridTextColumn Header="Proj File" IsReadOnly="True" Binding="{Binding ProjectObjectModel.FileInfo.FullName}"/>
+            </DataGrid.Columns>
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectionChanged">
+                    <i:InvokeCommandAction Command="{Binding SelectItemCommend}" 
+                                           CommandParameter="{Binding Path=SelectedItem, 
+                                                                      RelativeSource={RelativeSource 
+                                                                      Mode=FindAncestor, AncestorType=DataGrid}}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </DataGrid>
+        
+        <!--#region Details of selected item-->
+        <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="0">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="Info From DataBase:" FontSize="20" Margin="5"/>
+
+                <ctrl:InfoBox SetBoxLabel="Type Desc" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ObjectTypeDesc}"/>
+                <ctrl:InfoBox SetBoxLabel="Schema" SetBoxValue="{Binding SelectedItem.ServerObjectModel.SchemaName}"/>
+                <ctrl:InfoBox SetBoxLabel="Name" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ObjectName}"/>
+                <ctrl:InfoBox SetBoxLabel="Created" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ObjectCreateDate}"/>
+                <ctrl:InfoBox SetBoxLabel="Modified" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ObjectModDate}"/>
+                <ctrl:InfoBox SetBoxLabel="Columns Count" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ChildColumns.Count}"/>
+                <ctrl:InfoBox SetBoxLabel="Parameters Count" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ChildParameters.Count}"/>
+                <ctrl:InfoBox SetBoxLabel="Object Extended Description" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ExtendedDesc}"/>
+
+            </StackPanel>
+        </Border>
+
+        <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="1">
+            <Grid>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Info From Source File:" FontSize="20" Margin="5"/>
+
+                    <ctrl:InfoBox SetBoxLabel="Type" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectType}"/>
+                    <ctrl:InfoBox SetBoxLabel="Schema" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectSchema}"/>
+                    <ctrl:InfoBox SetBoxLabel="Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectName}"/>
+                    <ctrl:InfoBox SetBoxLabel="File Path" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.FileInfo.FullName}"/>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="db_docs info:" FontSize="16" Margin="5"/>
+
+                        <StackPanel Orientation="Vertical" Margin="10 0">
+                            <Image Source="{Binding SelectedItem.ProjectObjectModel.HasTagDbDocs, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2" VerticalAlignment="Top"/>
+                            <TextBlock Text="db_docs" FontSize="9"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Vertical" Margin="10 0">
+                            <Image Source="{Binding SelectedItem.ProjectObjectModel.HasTagDiagram, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2" VerticalAlignment="Top"/>
+                            <TextBlock Text="diagram" FontSize="9"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Vertical" Margin="10 0">
+                            <Image Source="{Binding SelectedItem.ProjectObjectModel.HasTagChangeLog, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2" VerticalAlignment="Top"/>
+                            <TextBlock Text="changelog" FontSize="9"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <ctrl:InfoBox SetBoxLabel="File_Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.File_Name}"/>
+
+                    <ctrl:InfoBox SetBoxLabel="Created Date" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Created.Date}"/>
+                    <ctrl:InfoBox SetBoxLabel="Created WeekDay" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Created.WeekDay}"/>
+
+                    <ctrl:InfoBox SetBoxLabel="Author Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Author.Name}"/>
+                    <ctrl:InfoBox SetBoxLabel="Author Initials" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Author.Initials}"/>
+                    <ctrl:InfoBox SetBoxLabel="Author Email" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Author.Email}"/>
+
+                    <ctrl:InfoBox SetBoxLabel="Modified Date" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.LastModified.Date}"/>
+                    <ctrl:InfoBox SetBoxLabel="Modified WeekDay" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.LastModified.WeekDay}"/>
+
+                    <ctrl:InfoBox SetBoxLabel="Modified By (Name)" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ModifiedBy.Name}"/>
+                    <ctrl:InfoBox SetBoxLabel="Modified By (Initials)" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ModifiedBy.Initials}"/>
+                    <ctrl:InfoBox SetBoxLabel="Modified By (Email)" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ModifiedBy.Email}"/>
+
+                    <ctrl:InfoBox SetBoxLabel="Module" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Module}"/>
+                    <ctrl:InfoBox SetBoxLabel="Schema" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.SchemaName}"/>
+                    <ctrl:InfoBox SetBoxLabel="Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ObjectName}"/>
+                    <ctrl:InfoBox SetBoxLabel="Description" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Description}"/>
+                    <ctrl:InfoBox SetBoxLabel="Return Val" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ReturnValue}"/>
+                    <ctrl:InfoBox SetBoxLabel="Diagram" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Diagram}"/>
+
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="2">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="Columns/Parameters:" FontSize="20" Margin="5"/>
+
+                <DataGrid x:Name="objectsChildren" AutoGenerateColumns="False" 
+                          ItemsSource="{Binding ObjectChildren}" HorizontalScrollBarVisibility="Auto">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Type" IsReadOnly="True" Binding="{Binding Type}"/>
+                        <DataGridTextColumn Header="Name" IsReadOnly="True" Binding="{Binding Name}"/>
+                        <DataGridTextColumn Header="DataType" IsReadOnly="True" Binding="{Binding DataType}"/>
+                        <DataGridTextColumn Header="IsServer" IsReadOnly="True" Binding="{Binding IsServer}"/>
+                        <DataGridTextColumn Header="ServerDesc" IsReadOnly="True" Binding="{Binding ServerDesc}"/>
+                        <DataGridTextColumn Header="IsProject" IsReadOnly="True" Binding="{Binding IsProject}"/>
+                        <DataGridTextColumn Header="ProjectDesc" IsReadOnly="True" Binding="{Binding ProjectDesc}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </Border>
+    </Grid>
+    
+    <!--<Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
@@ -27,7 +177,7 @@
             <RowDefinition Height="3*"/>
         </Grid.RowDefinitions>
         
-        <!--#region Stats-->
+        --><!--#region Stats--><!--
         <ListView Grid.Row="0" Grid.Column="0" Grid.RowSpan="2">
             <ListViewItem>
                 <Button Command="{Binding ChangeListCommand}" CommandParameter="{Binding SolutionObjects}" Background="{x:Null}" BorderBrush="{x:Null}">
@@ -57,7 +207,7 @@
             </ListViewItem>
         </ListView>
         
-        <!--#region Selection list-->
+        --><!--#region Selection list--><!--
         <DataGrid x:Name="solutionObjects" Grid.Row="0" Grid.Column="1" AutoGenerateColumns="False" ItemsSource="{Binding SelectedList}" HorizontalScrollBarVisibility="Visible">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Module" IsReadOnly="True" Binding="{Binding ProjectObjectModel.HeaderCommentModel.Module}"/>
@@ -86,20 +236,20 @@
 
         <Grid Grid.Row="1" Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
             
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="3*"/>
             </Grid.ColumnDefinitions>
 
             <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="0" Grid.Column="0">
                 <StackPanel Orientation="Vertical">
                     <TextBlock Text="Info From DataBase:" FontSize="20" Margin="5"/>
 
-                    <ctrl:InfoBox SetBoxLabel="Type Id" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ObjectTypeId}"/>
                     <ctrl:InfoBox SetBoxLabel="Type Desc" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ObjectTypeDesc}"/>
                     <ctrl:InfoBox SetBoxLabel="Schema" SetBoxValue="{Binding SelectedItem.ServerObjectModel.SchemaName}"/>
                     <ctrl:InfoBox SetBoxLabel="Name" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ObjectName}"/>
@@ -112,41 +262,67 @@
                 </StackPanel>
             </Border>
 
-            <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="1" Grid.Column="0">
-                <StackPanel Orientation="Vertical">
-                    <TextBlock Text="Info From Source File:" FontSize="20" Margin="5"/>
+            <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="0" Grid.Column="1" Grid.RowSpan="2">
+                <Grid>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="Info From Source File:" FontSize="20" Margin="5"/>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <StackPanel Orientation="Vertical" Margin="10 0">
-                            <Image Source="{Binding SelectedItem.ProjectObjectModel.HasTagDbDocs, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2" VerticalAlignment="Top"/>
-                            <TextBlock Text="db_docs" FontSize="9"/>
+                        <ctrl:InfoBox SetBoxLabel="Type" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectType}"/>
+                        <ctrl:InfoBox SetBoxLabel="Schema" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectSchema}"/>
+                        <ctrl:InfoBox SetBoxLabel="Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectName}"/>
+                        <ctrl:InfoBox SetBoxLabel="File Path" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.FileInfo.FullName}"/>
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="db_docs info:" FontSize="16" Margin="5"/>
+
+                            <StackPanel Orientation="Vertical" Margin="10 0">
+                                <Image Source="{Binding SelectedItem.ProjectObjectModel.HasTagDbDocs, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2" VerticalAlignment="Top"/>
+                                <TextBlock Text="db_docs" FontSize="9"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Vertical" Margin="10 0">
+                                <Image Source="{Binding SelectedItem.ProjectObjectModel.HasTagDiagram, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2" VerticalAlignment="Top"/>
+                                <TextBlock Text="diagram" FontSize="9"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Vertical" Margin="10 0">
+                                <Image Source="{Binding SelectedItem.ProjectObjectModel.HasTagChangeLog, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2" VerticalAlignment="Top"/>
+                                <TextBlock Text="changelog" FontSize="9"/>
+                            </StackPanel>
                         </StackPanel>
 
-                        <StackPanel Orientation="Vertical" Margin="10 0">
-                            <Image Source="{Binding SelectedItem.ProjectObjectModel.HasTagDiagram, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2" VerticalAlignment="Top"/>
-                            <TextBlock Text="diagram" FontSize="9"/>
-                        </StackPanel>
+                        <ctrl:InfoBox SetBoxLabel="File_Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.File_Name}"/>
 
-                        <StackPanel Orientation="Vertical" Margin="10 0">
-                            <Image Source="{Binding SelectedItem.ProjectObjectModel.HasTagChangeLog, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2" VerticalAlignment="Top"/>
-                            <TextBlock Text="changelog" FontSize="9"/>
-                        </StackPanel>
+                        <ctrl:InfoBox SetBoxLabel="Created Date" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Created.Date}"/>
+                        <ctrl:InfoBox SetBoxLabel="Created WeekDay" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Created.WeekDay}"/>
+
+                        <ctrl:InfoBox SetBoxLabel="Author Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Author.Name}"/>
+                        <ctrl:InfoBox SetBoxLabel="Author Initials" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Author.Initials}"/>
+                        <ctrl:InfoBox SetBoxLabel="Author Email" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Author.Email}"/>
+
+                        <ctrl:InfoBox SetBoxLabel="Modified Date" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.LastModified.Date}"/>
+                        <ctrl:InfoBox SetBoxLabel="Modified WeekDay" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.LastModified.WeekDay}"/>
+
+                        <ctrl:InfoBox SetBoxLabel="Modified By (Name)" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ModifiedBy.Name}"/>
+                        <ctrl:InfoBox SetBoxLabel="Modified By (Initials)" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ModifiedBy.Initials}"/>
+                        <ctrl:InfoBox SetBoxLabel="Modified By (Email)" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ModifiedBy.Email}"/>
+
+                        <ctrl:InfoBox SetBoxLabel="Module" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Module}"/>
+                        <ctrl:InfoBox SetBoxLabel="Schema" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.SchemaName}"/>
+                        <ctrl:InfoBox SetBoxLabel="Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ObjectName}"/>
+                        <ctrl:InfoBox SetBoxLabel="Description" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Description}"/>
+                        <ctrl:InfoBox SetBoxLabel="Return Val" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ReturnValue}"/>
+                        <ctrl:InfoBox SetBoxLabel="Diagram" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Diagram}"/>
+
                     </StackPanel>
+                </Grid>
+            </Border>
 
-                    <ctrl:InfoBox SetBoxLabel="Type" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectType}"/>
-                    <ctrl:InfoBox SetBoxLabel="Schema" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectSchema}"/>
-                    <ctrl:InfoBox SetBoxLabel="Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectName}"/>
-
-                    <TextBlock Text="db_docs info:" FontSize="16" Margin="5"/>
-                    
-                    <ctrl:InfoBox SetBoxLabel="Created" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.ObjectCreateDate}"/>
-                    <ctrl:InfoBox SetBoxLabel="Modified" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.ObjectModDate}"/>
-                    <ctrl:InfoBox SetBoxLabel="Columns Count" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.ChildColumns.Count}"/>
-                    <ctrl:InfoBox SetBoxLabel="Parameters Count" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.ChildParameters.Count}"/>
-                    <ctrl:InfoBox SetBoxLabel="Object Extended Description" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.ExtendedDesc}"/>
-
+            <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="0" Grid.Column="2" Grid.RowSpan="2">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Columns/Parameters:" FontSize="20" Margin="5"/>
                 </StackPanel>
             </Border>
         </Grid>
-    </Grid>
+    </Grid>-->
 </UserControl>

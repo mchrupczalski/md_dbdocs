@@ -47,6 +47,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -87,6 +88,7 @@
     <Compile Include="Helpers\SqlObjectTypeTranslator.cs" />
     <Compile Include="Helpers\YamlSerializer.cs" />
     <Compile Include="Models\ConfigValidationModel.cs" />
+    <Compile Include="Models\ObjectChildModel.cs" />
     <Compile Include="Models\ServerObjectChildParameterModel.cs" />
     <Compile Include="Models\ServerObjectParentModel.cs" />
     <Compile Include="Models\ProjectObjectModel.cs" />
@@ -193,9 +195,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Content Include="config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="config.json" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
