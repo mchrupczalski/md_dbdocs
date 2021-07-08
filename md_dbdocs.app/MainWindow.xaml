@@ -7,7 +7,7 @@
         xmlns:v="clr-namespace:md_dbdocs.app.ViewModels"
         xmlns:Views="clr-namespace:md_dbdocs.app.Views" x:Class="md_dbdocs.app.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="900" Width="1440">
+        Title="md_db_docs" Height="1000" Width="1500">
     <Grid>
 
     </Grid>

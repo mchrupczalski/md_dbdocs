@@ -12,32 +12,34 @@ namespace md_dbdocs.app.ViewModels
     {
         private readonly ConfigModel _configModel;
         private ObservableCollection<SolutionObjectModel> _selectedList;
+        private SolutionObjectModel _selectedItem;
 
         public ObservableCollection<SolutionObjectModel> SolutionObjects { get; set; }      // objects with match
         public ObservableCollection<SolutionObjectModel> ServerObjects { get; set; }        // server objects without match
         public ObservableCollection<SolutionObjectModel> ProjectObjects { get; set; }       // project objects without match
         public ObservableCollection<SolutionObjectModel> SelectedList { get => _selectedList; set { _selectedList = value; base.OnPropertyChanged(); } }
+        public SolutionObjectModel SelectedItem { get => _selectedItem; set { _selectedItem = value; base.OnPropertyChanged(); } }
 
         public RelayCommand ChangeListCommand { get; private set; }
+        public RelayCommand SelectItemCommend { get; private set; }
 
         public DetailsViewModel(ConfigModel configModel)
         {
             this._configModel = configModel;
             this.ChangeListCommand = new RelayCommand(ChangeListExecute, ChangeListCanExecute);
-            
+            this.SelectItemCommend = new RelayCommand(SelectItemExecute, SelectItemCanExecute);
+
             LoadDetails();
             this.SelectedList = this.SolutionObjects;
+            this.SelectedItem = this.SelectedList[0];
         }
 
-        private void ChangeListExecute(object obj)
-        {
-            this.SelectedList = (ObservableCollection<SolutionObjectModel>)obj;
-        }
 
-        private bool ChangeListCanExecute(object obj)
-        {
-            return true;
-        }
+
+        private void ChangeListExecute(object obj) => this.SelectedList = (ObservableCollection<SolutionObjectModel>)obj;
+        private void SelectItemExecute(object obj) => this.SelectedItem = (SolutionObjectModel)obj;
+        private bool ChangeListCanExecute(object obj) => true;
+        private bool SelectItemCanExecute(object obj) => true;
 
         public void LoadDetails()
         {
@@ -145,7 +147,7 @@ namespace md_dbdocs.app.ViewModels
                     string queryChildren = "";
                     string replaceTag = "";
                     string query = "";
-                    switch (item.ObjectId.ToUpper())
+                    switch (item.ObjectTypeId.ToUpper().Trim())
                     {
                         case "FN":      // SQL_SCALAR_FUNCTION
                         case "IF":      // SQL_INLINE_TABLE_VALUED_FUNCTION
@@ -158,10 +160,15 @@ namespace md_dbdocs.app.ViewModels
                             break;
                         case "U":       // USER_TABLE
                         case "V":       // VIEW
-                        case "TTYPE":   // TABLE_TYPE
                             queryChildren = sqlMinorObjCols;
                             replaceTag = sqlMinorObjCols_Replace;
                             query = GetSqlFile(queryChildren).Replace(replaceTag, item.ObjectId);
+                            item.ChildColumns = dal.LoadDataModel<ServerObjectChildColumnModel>(query);
+                            break;
+                        case "TTYPE":   // TABLE_TYPE
+                            queryChildren = sqlMinorObjCols;
+                            replaceTag = sqlMinorObjCols_Replace;
+                            query = GetSqlFile(queryChildren).Replace(replaceTag, item.UserTypeId);
                             item.ChildColumns = dal.LoadDataModel<ServerObjectChildColumnModel>(query);
                             break;
                         default:

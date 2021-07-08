@@ -5,17 +5,26 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:md_dbdocs.app.Views"
              xmlns:vm="clr-namespace:md_dbdocs.app.ViewModels"
+             xmlns:m="clr-namespace:md_dbdocs.app.Models"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:cnv="clr-namespace:md_dbdocs.app.Converters"
+             xmlns:ctrl="clr-namespace:md_dbdocs.app.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" d:Background="White">
+             d:DesignHeight="900" d:DesignWidth="1200" d:Background="White">
+
+    <UserControl.Resources>
+        <cnv:BoolToImageConverter x:Key="BoolToImageConverter" FalseImage="/Resources/invalid.png" TrueImage="/Resources/valid.png" />
+        <cnv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </UserControl.Resources>
+    
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="3*"/>
         </Grid.RowDefinitions>
         
         <!--#region Stats-->
@@ -49,15 +58,95 @@
         </ListView>
         
         <!--#region Selection list-->
-        <ListView Grid.Row="0" Grid.Column="1" ItemsSource="{Binding SelectedList}">
-            <ListView.View>
-                <GridView AllowsColumnReorder="False">
-                    <GridViewColumn Header="Object Type" DisplayMemberBinding="{Binding ProjectObjectModel.CreateObjectType}"/>
-                    <GridViewColumn Header="Object Schema" DisplayMemberBinding="{Binding ProjectObjectModel.CreateObjectSchema}"/>
-                    <GridViewColumn Header="Object Name" DisplayMemberBinding="{Binding ProjectObjectModel.CreateObjectName}"/>
-                </GridView>
-            </ListView.View>
-        </ListView>
+        <DataGrid x:Name="solutionObjects" Grid.Row="0" Grid.Column="1" AutoGenerateColumns="False" ItemsSource="{Binding SelectedList}" HorizontalScrollBarVisibility="Visible">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Module" IsReadOnly="True" Binding="{Binding ProjectObjectModel.HeaderCommentModel.Module}"/>
+                <DataGridTextColumn Header="Type" IsReadOnly="True" Binding="{Binding ServerObjectModel.ObjectTypeId}"/>
+                <DataGridTextColumn Header="Schema" IsReadOnly="True" Binding="{Binding ServerObjectModel.SchemaName}"/>
+                <DataGridTextColumn Header="Name" IsReadOnly="True" Binding="{Binding ServerObjectModel.ObjectName}"/>
+                <DataGridTextColumn Header="Created" IsReadOnly="True" Binding="{Binding ServerObjectModel.ObjectCreateDate}"/>
+                <DataGridTextColumn Header="Modified" IsReadOnly="True" Binding="{Binding ServerObjectModel.ObjectModDate}"/>
+                <DataGridCheckBoxColumn Header="db_docs" IsReadOnly="True" Binding="{Binding ProjectObjectModel.HasTagDbDocs}"/>
+                <DataGridTextColumn Header="Exceptions" IsReadOnly="True" Binding="{Binding ProjectObjectModel.ProcessingExceptions.Count}"/>
+                <DataGridTextColumn Header="Columns" IsReadOnly="True" Binding="{Binding ServerObjectModel.ChildColumns.Count}"/>
+                <DataGridTextColumn Header="Parameters" IsReadOnly="True" Binding="{Binding ServerObjectModel.ChildParameters.Count}"/>
+                <DataGridTextColumn Header="Db Ext. Desc." IsReadOnly="True" Binding="{Binding ServerObjectModel.ExtendedDesc}"/>
+                <DataGridTextColumn Header="Proj Ext. Desc." IsReadOnly="False" Binding="{Binding ProjectObjectModel.HeaderCommentModel.Description}"/>
+                <DataGridTextColumn Header="Proj File" IsReadOnly="True" Binding="{Binding ProjectObjectModel.FileInfo.FullName}"/>
+            </DataGrid.Columns>
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectionChanged">
+                    <i:InvokeCommandAction Command="{Binding SelectItemCommend}" 
+                                           CommandParameter="{Binding Path=SelectedItem, 
+                                                                      RelativeSource={RelativeSource 
+                                                                      Mode=FindAncestor, AncestorType=DataGrid}}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </DataGrid>
 
+        <Grid Grid.Row="1" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="0" Grid.Column="0">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Info From DataBase:" FontSize="20" Margin="5"/>
+
+                    <ctrl:InfoBox SetBoxLabel="Type Id" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ObjectTypeId}"/>
+                    <ctrl:InfoBox SetBoxLabel="Type Desc" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ObjectTypeDesc}"/>
+                    <ctrl:InfoBox SetBoxLabel="Schema" SetBoxValue="{Binding SelectedItem.ServerObjectModel.SchemaName}"/>
+                    <ctrl:InfoBox SetBoxLabel="Name" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ObjectName}"/>
+                    <ctrl:InfoBox SetBoxLabel="Created" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ObjectCreateDate}"/>
+                    <ctrl:InfoBox SetBoxLabel="Modified" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ObjectModDate}"/>
+                    <ctrl:InfoBox SetBoxLabel="Columns Count" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ChildColumns.Count}"/>
+                    <ctrl:InfoBox SetBoxLabel="Parameters Count" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ChildParameters.Count}"/>
+                    <ctrl:InfoBox SetBoxLabel="Object Extended Description" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ExtendedDesc}"/>
+
+                </StackPanel>
+            </Border>
+
+            <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="1" Grid.Column="0">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="Info From Source File:" FontSize="20" Margin="5"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Vertical" Margin="10 0">
+                            <Image Source="{Binding SelectedItem.ProjectObjectModel.HasTagDbDocs, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2" VerticalAlignment="Top"/>
+                            <TextBlock Text="db_docs" FontSize="9"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Vertical" Margin="10 0">
+                            <Image Source="{Binding SelectedItem.ProjectObjectModel.HasTagDiagram, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2" VerticalAlignment="Top"/>
+                            <TextBlock Text="diagram" FontSize="9"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Vertical" Margin="10 0">
+                            <Image Source="{Binding SelectedItem.ProjectObjectModel.HasTagChangeLog, Converter={StaticResource BoolToImageConverter}}" Width="12" Height="12" Margin="2" VerticalAlignment="Top"/>
+                            <TextBlock Text="changelog" FontSize="9"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <ctrl:InfoBox SetBoxLabel="Type" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectType}"/>
+                    <ctrl:InfoBox SetBoxLabel="Schema" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectSchema}"/>
+                    <ctrl:InfoBox SetBoxLabel="Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectName}"/>
+
+                    <TextBlock Text="db_docs info:" FontSize="16" Margin="5"/>
+                    
+                    <ctrl:InfoBox SetBoxLabel="Created" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.ObjectCreateDate}"/>
+                    <ctrl:InfoBox SetBoxLabel="Modified" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.ObjectModDate}"/>
+                    <ctrl:InfoBox SetBoxLabel="Columns Count" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.ChildColumns.Count}"/>
+                    <ctrl:InfoBox SetBoxLabel="Parameters Count" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.ChildParameters.Count}"/>
+                    <ctrl:InfoBox SetBoxLabel="Object Extended Description" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.ExtendedDesc}"/>
+
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

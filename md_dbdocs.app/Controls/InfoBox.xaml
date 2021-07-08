@@ -1,0 +1,16 @@
+﻿<UserControl x:Class="md_dbdocs.app.Controls.InfoBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="90" d:DesignWidth="90" d:Background="White"
+             FontFamily="Segoe Ui">
+    <Grid>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <TextBlock x:Name="iBoxLabel" HorizontalAlignment="Center" FontSize="12" FontWeight="Light" Margin="2" d:Text="Label"/>
+            <TextBlock HorizontalAlignment="Center" FontSize="12" FontWeight="Light" Margin="2" Text=":"/>
+            <TextBlock x:Name="iBoxValue" HorizontalAlignment="Center" FontSize="12" FontWeight="SemiBold" Margin="2" d:Text="Value"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
