@@ -176,39 +176,42 @@
         <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
             <DockPanel Height="100">
                 <StackPanel>
-                    <TextBlock Text="db_docs settings"/>
+                    <TextBlock Text="db_docs settings" Margin="5" FontWeight="Bold"/>
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <Grid Margin="10">
+                    <Border BorderBrush="DarkGray" BorderThickness="0.5">
+                        <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Author Name: " HorizontalAlignment="Right"/>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Author Initials: " HorizontalAlignment="Right"/>
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Author Email: " HorizontalAlignment="Right"/>
+                            <Grid Margin="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
 
-                            <TextBox Grid.Row="0" Grid.Column="1" MinWidth="250"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" MinWidth="250"/>
-                            <TextBox Grid.Row="2" Grid.Column="1" MinWidth="250"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Author Name: " HorizontalAlignment="Right" Margin="2"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Author Initials: " HorizontalAlignment="Right" Margin="2"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Author Email: " HorizontalAlignment="Right" Margin="2"/>
+
+                                <TextBox Grid.Row="0" Grid.Column="1" MinWidth="250" Margin="2"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" MinWidth="250" Margin="2"/>
+                                <TextBox Grid.Row="2" Grid.Column="1" MinWidth="250" Margin="2"/>
+                            </Grid>
+
+
+                            <StackPanel Orientation="Vertical" Margin="10" Grid.Column="1">
+                                <CheckBox Content="Save db_docs to source file" />
+                            </StackPanel>
                         </Grid>
-
-                        <StackPanel Orientation="Vertical" Margin="10" Grid.Column="1">
-                            <CheckBox Content="Save db_docs to source file" />
-                        </StackPanel>
-                    </Grid>
+                    </Border>
 
                     <StackPanel Orientation="Horizontal">
 
