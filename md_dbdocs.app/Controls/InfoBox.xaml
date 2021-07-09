@@ -6,11 +6,17 @@
              mc:Ignorable="d" 
              d:DesignHeight="90" d:DesignWidth="90" d:Background="White"
              FontFamily="Segoe Ui">
-    <Grid>
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-            <TextBlock x:Name="iBoxLabel" HorizontalAlignment="Center" FontSize="12" FontWeight="Light" Margin="2" d:Text="Label"/>
-            <TextBlock HorizontalAlignment="Center" FontSize="12" FontWeight="Light" Margin="2" Text=":"/>
-            <TextBlock x:Name="iBoxValue" HorizontalAlignment="Center" FontSize="12" FontWeight="SemiBold" Margin="2" d:Text="ValueValueValueValue" TextWrapping="Wrap"/>
-        </StackPanel>
+    <Grid x:Name="displayBox">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock x:Name="iBoxLabel" Grid.Column="0" HorizontalAlignment="Center" FontSize="12" FontWeight="Light" Margin="2" d:Text="Label"/>
+        <TextBlock x:Name="iSeparate" Grid.Column="1" HorizontalAlignment="Center" FontSize="12" FontWeight="Light" Margin="1" Text=":"/>
+        <TextBlock x:Name="iBoxValue" Grid.Column="2" HorizontalAlignment="Center" FontSize="12" FontWeight="SemiBold" Margin="2" d:Text="ValueValueValueValue" TextWrapping="Wrap"/>
     </Grid>
 </UserControl>
+
+    

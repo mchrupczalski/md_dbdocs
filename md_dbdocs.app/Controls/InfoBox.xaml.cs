@@ -29,17 +29,7 @@ namespace md_dbdocs.app.Controls
 
         private void OnSetValueChanged(DependencyPropertyChangedEventArgs e)
         {
-            string v;
-
-            if (e.NewValue != null)
-            {
-                v = e.NewValue.ToString();
-            }
-            else
-            {
-                v = "";
-            }
-
+            string v = e.NewValue != null ? e.NewValue.ToString() : "";
             iBoxValue.Text = v;
         }
 
@@ -60,6 +50,28 @@ namespace md_dbdocs.app.Controls
         private void OnSetLabelChanged(DependencyPropertyChangedEventArgs e)
         {
             iBoxLabel.Text = e.NewValue.ToString();
+        }
+
+        public static readonly DependencyProperty SetWidthProperty = DependencyProperty.Register("SetBoxWidth", typeof(double), typeof(InfoBox), new PropertyMetadata(90D, new PropertyChangedCallback(OnSetWidthChanged)));
+        public double SetBoxWidth
+        {
+            get { return (double)GetValue(SetWidthProperty); }
+            set { SetValue(SetWidthProperty, value); }
+        }
+
+        private static void OnSetWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            InfoBox infoBox = d as InfoBox;
+            infoBox.OnSetWidthChanged(e);
+        }
+
+        private void OnSetWidthChanged(DependencyPropertyChangedEventArgs e)
+        {
+            double othersW = (iBoxLabel.ActualWidth + iBoxLabel.Margin.Left + iBoxLabel.Margin.Right) +
+                            (iSeparate.ActualWidth + iSeparate.Margin.Left + iSeparate.Margin.Right) +
+                            (iBoxValue.Margin.Left + iBoxValue.Margin.Right);
+            double newWidth = (double)e.NewValue - othersW;
+            iBoxValue.MaxWidth = newWidth < 0 ? 0 : newWidth;
         }
     }
 }

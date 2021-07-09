@@ -9,23 +9,26 @@
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:cnv="clr-namespace:md_dbdocs.app.Converters"
              xmlns:ctrl="clr-namespace:md_dbdocs.app.Controls"
+             xmlns:math="http://hexinnovation.com/math"
              mc:Ignorable="d" 
              d:DesignHeight="900" d:DesignWidth="1200" d:Background="White">
 
     <UserControl.Resources>
         <cnv:BoolToImageConverter x:Key="BoolToImageConverter" FalseImage="/Resources/invalid.png" TrueImage="/Resources/valid.png" />
         <cnv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <math:MathConverter x:Key="MathConverter" />
     </UserControl.Resources>
 
-    <Grid>
+    <Grid x:Name="displayGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="3*"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="auto" MaxWidth="{Binding ElementName=displayGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/7*2}"/>
+            <ColumnDefinition Width="auto" MaxWidth="{Binding ElementName=displayGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/7*2}"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         
@@ -75,7 +78,7 @@
         </DataGrid>
         
         <!--#region Details of selected item-->
-        <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="0">
+        <Border x:Name="leftGrid" BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="0" Grid.RowSpan="1" Margin="5">
             <StackPanel Orientation="Vertical">
                 <TextBlock Text="Info From DataBase:" FontSize="20" Margin="5"/>
 
@@ -86,12 +89,13 @@
                 <ctrl:InfoBox SetBoxLabel="Modified" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ObjectModDate}"/>
                 <ctrl:InfoBox SetBoxLabel="Columns Count" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ChildColumns.Count}"/>
                 <ctrl:InfoBox SetBoxLabel="Parameters Count" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ChildParameters.Count}"/>
-                <ctrl:InfoBox SetBoxLabel="Object Extended Description" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ExtendedDesc}"/>
+                <ctrl:InfoBox SetBoxLabel="Object Extended Description" SetBoxValue="{Binding SelectedItem.ServerObjectModel.ExtendedDesc}"
+                              SetBoxWidth="{Binding ElementName=leftGrid,Path=ActualWidth}"/>
 
             </StackPanel>
         </Border>
 
-        <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="1">
+        <Border x:Name="middleGrid" BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="1" Grid.RowSpan="1" Margin="5">
             <Grid>
                 <StackPanel Orientation="Vertical">
                     <TextBlock Text="Info From Source File:" FontSize="20" Margin="5"/>
@@ -99,7 +103,8 @@
                     <ctrl:InfoBox SetBoxLabel="Type" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectType}"/>
                     <ctrl:InfoBox SetBoxLabel="Schema" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectSchema}"/>
                     <ctrl:InfoBox SetBoxLabel="Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectName}"/>
-                    <ctrl:InfoBox SetBoxLabel="File Path" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.FileInfo.FullName}"/>
+                    <ctrl:InfoBox SetBoxLabel="File Path" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.FileInfo.FullName}" 
+                                  SetBoxWidth="{Binding ElementName=middleGrid,Path=ActualWidth}"/>
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="db_docs info:" FontSize="16" Margin="5"/>
@@ -143,11 +148,12 @@
                     <ctrl:InfoBox SetBoxLabel="Return Val" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ReturnValue}"/>
                     <ctrl:InfoBox SetBoxLabel="Diagram" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Diagram}"/>
 
+                    <Button Content="Generate db_docs" Margin="10"/>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="2">
+        <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="2" Margin="5">
             <StackPanel Orientation="Vertical">
                 <TextBlock Text="Columns/Parameters:" FontSize="20" Margin="5"/>
 
@@ -160,10 +166,59 @@
                         <DataGridTextColumn Header="IsServer" IsReadOnly="True" Binding="{Binding IsServer}"/>
                         <DataGridTextColumn Header="ServerDesc" IsReadOnly="True" Binding="{Binding ServerDesc}"/>
                         <DataGridTextColumn Header="IsProject" IsReadOnly="True" Binding="{Binding IsProject}"/>
-                        <DataGridTextColumn Header="ProjectDesc" IsReadOnly="True" Binding="{Binding ProjectDesc}"/>
+                        <DataGridTextColumn Header="ProjectDesc" Binding="{Binding ProjectDesc}"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </StackPanel>
+        </Border>
+
+        <!--#region Settings & navigation-->
+        <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
+            <DockPanel Height="100">
+                <StackPanel>
+                    <TextBlock Text="db_docs settings"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid Margin="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Author Name: " HorizontalAlignment="Right"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Author Initials: " HorizontalAlignment="Right"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Author Email: " HorizontalAlignment="Right"/>
+
+                            <TextBox Grid.Row="0" Grid.Column="1" MinWidth="250"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" MinWidth="250"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" MinWidth="250"/>
+                        </Grid>
+
+                        <StackPanel Orientation="Vertical" Margin="10" Grid.Column="1">
+                            <CheckBox Content="Save db_docs to source file" />
+                        </StackPanel>
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal">
+
+                        
+
+                            
+
+                        </StackPanel>
+                    </StackPanel>
+            </DockPanel>
         </Border>
     </Grid>
     

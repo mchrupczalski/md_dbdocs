@@ -47,8 +47,15 @@ namespace md_dbdocs.app.ViewModels
         {
             var outList = new ObservableCollection<ObjectChildModel>();
 
+            // define lists and dictionaries, either use from models or create new, to avoid null reference exception
+            List<ServerObjectChildColumnModel> serverCols = solutionObjectModel.ServerObjectModel.ChildColumns ?? new List<ServerObjectChildColumnModel>();
+            List<ServerObjectChildParameterModel> serverParams = solutionObjectModel.ServerObjectModel.ChildParameters ?? new List<ServerObjectChildParameterModel>();
+            Dictionary<string, string> projCols = solutionObjectModel.ProjectObjectModel.HeaderModel.Fields ?? new Dictionary<string, string>();
+            Dictionary<string, string> projParams = solutionObjectModel.ProjectObjectModel.HeaderModel.Parameters ?? new Dictionary<string, string>();
+
+
             // loop on columns and parameters in server object and add to list
-            foreach (var item in solutionObjectModel.ServerObjectModel.ChildColumns)
+            foreach (var item in serverCols)
             {
                 var child = new ObjectChildModel
                 {
@@ -62,7 +69,7 @@ namespace md_dbdocs.app.ViewModels
                 outList.Add(child);
             }
 
-            foreach (var item in solutionObjectModel.ServerObjectModel.ChildParameters)
+            foreach (var item in serverParams)
             {
                 var child = new ObjectChildModel
                 {
@@ -77,9 +84,9 @@ namespace md_dbdocs.app.ViewModels
             }
 
             // loop on columns and parameters in project object, find item with the same name and extend info, or add to list if not found
-            foreach (KeyValuePair<string, string> item in solutionObjectModel.ProjectObjectModel.HeaderModel.Fields)
+            foreach (KeyValuePair<string, string> item in projCols)
             {
-                var listItem = outList.Where(i => i.Name == item.Key).FirstOrDefault();
+                var listItem = outList.FirstOrDefault(i => i.Name == item.Key);
                 if (listItem == null)
                 {
                     var child = new ObjectChildModel
@@ -97,9 +104,9 @@ namespace md_dbdocs.app.ViewModels
                 }
             }
 
-            foreach (KeyValuePair<string, string> item in solutionObjectModel.ProjectObjectModel.HeaderModel.Parameters)
+            foreach (KeyValuePair<string, string> item in projParams)
             {
-                var listItem = outList.Where(i => i.Name == item.Key).FirstOrDefault();
+                var listItem = outList.FirstOrDefault(i => i.Name == item.Key);
                 if (listItem == null)
                 {
                     var child = new ObjectChildModel
