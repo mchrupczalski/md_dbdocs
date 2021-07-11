@@ -16,6 +16,11 @@ namespace md_dbdocs.app.Services
             _configModel = configModel;
         }
 
+        public FileScannerService()
+        {
+
+        }
+
         /// <summary>
         /// Gets the project objects.
         /// </summary>
@@ -86,7 +91,7 @@ namespace md_dbdocs.app.Services
         /// Scans project file in search for dbdocs tags and serialize to class.
         /// </summary>
         /// <param name="projFile">The proj file.</param>
-        private void GetDbDocsTags(ProjectObjectModel projFile)
+        public void GetDbDocsTags(ProjectObjectModel projFile)
         {
             /* 
              * read given file line by line until any of the know tags found
@@ -140,7 +145,8 @@ namespace md_dbdocs.app.Services
 
                     // remove new line and tab
                     //line = line.Replace("/n", string.Empty);
-                    //line = line.Replace("/t", string.Empty);
+                    char tab = '\u0009';
+                    line = line.Replace(tab.ToString(), "    ");
                 }
 
                 // set last tag in the list as active

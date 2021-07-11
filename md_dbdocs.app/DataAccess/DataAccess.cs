@@ -176,7 +176,6 @@ namespace md_dbdocs.app.DataAccess
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                throw;
             }
         }
 

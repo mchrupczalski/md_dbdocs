@@ -75,6 +75,9 @@
     <Compile Include="Controls\DisplayLabelValueControl.xaml.cs">
       <DependentUpon>DisplayLabelValueControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\InfoBox_Input.xaml.cs">
+      <DependentUpon>InfoBox_Input.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\InfoBox.xaml.cs">
       <DependentUpon>InfoBox.xaml</DependentUpon>
     </Compile>
@@ -105,15 +108,24 @@
     <Compile Include="Services\ViewNavigationService.cs" />
     <Compile Include="ViewModels\ConfigViewModel.cs" />
     <Compile Include="ViewModels\DetailsViewModel.cs" />
+    <Compile Include="ViewModels\EditSourceViewModel.cs" />
+    <Compile Include="ViewModels\GenerateDocsViewModel.cs" />
     <Compile Include="Views\ConfigView.xaml.cs">
       <DependentUpon>ConfigView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DetailsView.xaml.cs">
       <DependentUpon>DetailsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\EditSourceView.xaml.cs">
+      <DependentUpon>EditSourceView.xaml</DependentUpon>
+    </Compile>
     <Page Include="Controls\DisplayLabelValueControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\InfoBox_Input.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Controls\InfoBox.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -136,6 +148,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DetailsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\EditSourceView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

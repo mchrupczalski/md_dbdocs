@@ -3,7 +3,7 @@ DECLARE @ObjectId INT = <<ProcedureId>>;
 
 SELECT
      c.parameter_id         AS ParameterId
-    ,c.name                 AS ParameterName
+    ,REPLACE(c.name,'@','') AS ParameterName
     ,t.name                 AS DataType
     ,c.max_length           AS MaxLen
     ,c.[precision]          AS [Precision]

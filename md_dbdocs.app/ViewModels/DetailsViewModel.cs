@@ -1,11 +1,14 @@
 ﻿using md_dbdocs.app.Helpers;
 using md_dbdocs.app.Models;
+using md_dbdocs.app.Models.YamlModel;
+using md_dbdocs.app.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Windows;
 
 namespace md_dbdocs.app.ViewModels
 {
@@ -22,18 +25,127 @@ namespace md_dbdocs.app.ViewModels
         public ObservableCollection<ObjectChildModel> ObjectChildren { get => _objectChildren; set { _objectChildren = value; base.OnPropertyChanged(); } }
 
         public RelayCommand SelectItemCommend { get; private set; }
+        public RelayCommand EditCommand { get; private set; }
+        public RelayCommand SaveCommand { get; set; }
+        public RelayCommand GenerateDocsCommand { get; set; }
 
         public int MatchedToSource { get => SolutionObjects.Count(p => p.IsServer && p.IsProject); }
         public int NotMatchedToSource { get => SolutionObjects.Count(p => p.IsServer && !p.IsProject); }
         public int NotMatchedToObject { get => SolutionObjects.Count(p => !p.IsServer && p.IsProject); }
 
+        public bool IgnoreUnreviewed { get; set; }
+
         public DetailsViewModel(ConfigModel configModel)
         {
             this._configModel = configModel;
             this.SelectItemCommend = new RelayCommand(SelectItemExecute, SelectItemCanExecute);
+            this.EditCommand = new RelayCommand(EditExecute, EditCanExecute);
+            this.SaveCommand = new RelayCommand(SaveExecute, SaveCanExecute);
+            this.GenerateDocsCommand = new RelayCommand(GenerateDocsExecute, GenerateDocsCanExecute);
 
             LoadDetails();
             this.SelectedItem = this.SolutionObjects[0];
+        }
+
+        private void GenerateDocsExecute(object obj)
+        {
+            // create view model for GenerateDocsView and navigate to view
+        }
+
+        private bool GenerateDocsCanExecute(object obj)
+        {
+            bool allReviewed = SolutionObjects.Count(p => p.IsReviewed) == this.MatchedToSource;
+            return IgnoreUnreviewed ? true : allReviewed;
+        }
+
+        private void SaveExecute(object obj)
+        {
+            string schemaName = SelectedItem.ServerObjectModel.SchemaName;
+            string objectName = SelectedItem.ServerObjectModel.ObjectName;
+            string objectType = SelectedItem.ProjectObjectModel.CreateObjectType;
+            string oldDesc = SelectedItem.ServerObjectModel.ExtendedDesc;
+            string newDesc = SelectedItem.ProjectObjectModel.HeaderModel.Description;
+
+            string addExtPropParent = $"EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'{ newDesc }' , @level0type=N'SCHEMA',@level0name=N'{ schemaName }', @level1type=N'{ objectType }',@level1name=N'{ objectName }'";
+            string updExtPropParent = $"EXEC sys.sp_updateextendedproperty @name=N'MS_Description', @value=N'{ newDesc }' , @level0type=N'SCHEMA',@level0name=N'{ schemaName }', @level1type=N'{ objectType }',@level1name=N'{ objectName }'";
+
+            
+            using (var dal = new DataAccess.DataAccess(Helpers.ConnectionStringHelper.GetConnectionString(_configModel)))
+            {
+                // update object description
+                string query = string.IsNullOrEmpty(oldDesc) ? addExtPropParent : updExtPropParent;
+                dal.ExecuteText(query);
+
+                // update fields/parameters description
+                foreach (var item in ObjectChildren)
+                {
+                    string childType = item.Type;
+                    string childName = childType == "PARAMETER" ? $"@{ item.Name }" : item.Name;
+                    string oldChildDesc = item.ServerDesc;
+                    string newChildDesc = item.ProjectDesc;
+
+                    string addExtPropChild = $"EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'{ newChildDesc }', @level0type=N'SCHEMA', @level0name=N'{ schemaName }', @level1type=N'{ objectType }', @level1name=N'{ objectName }', @level2type=N'{ childType }', @level2name=N'{ childName }'";
+                    string updExtPropChild = $"EXEC sys.sp_updateextendedproperty @name=N'MS_Description', @value=N'{ newChildDesc }', @level0type=N'SCHEMA', @level0name=N'{ schemaName }', @level1type=N'{ objectType }', @level1name=N'{ objectName }', @level2type=N'{ childType }', @level2name=N'{ childName }'";
+
+                    string queryChild = string.IsNullOrEmpty(oldChildDesc) ? addExtPropChild : updExtPropChild;
+                    dal.ExecuteText(queryChild);
+                }
+            }
+
+            // mark as reviewed
+            SelectedItem.IsReviewed = true;
+            for (int i = 0; i < SolutionObjects.Count; i++)
+            {
+                var item = SolutionObjects[i];
+                bool isProj = item.ProjectObjectModel != null;
+                if (isProj && item.ProjectObjectModel.FileInfo.FullName == SelectedItem.ProjectObjectModel.FileInfo.FullName)
+                {
+                    SolutionObjects[i].IsReviewed = true;
+                    break;
+                }
+            }
+        }
+
+        private bool SaveCanExecute(object obj)
+        {
+            // can save when source and target are known
+            return SelectedItem.IsServer && SelectedItem.IsProject;
+        }
+
+        private void EditExecute(object obj)
+        {
+            // open dialog window with partial info for the header (object schema, name, server description of objects (if known), list of fields/parameters
+            var editModel = new EditSourceViewModel(SelectedItem);
+            var editView = new EditSourceView(editModel);
+            Window editWindow = new Window();
+            editWindow.Content = editView;
+            editWindow.Width = 900;
+            editWindow.Height = 600;
+            editWindow.ShowDialog();
+
+            // after dialog closes rescan the file
+            var fs = new Services.FileScannerService();
+            fs.GetDbDocsTags(SelectedItem.ProjectObjectModel);
+
+            // update fields / parameters
+            this.ObjectChildren = GetChildrenInfo(SelectedItem);
+
+            // update item in collection
+            foreach (var item in SolutionObjects)
+            {
+                bool isModel = item.ProjectObjectModel != null;
+                if (isModel && item.ProjectObjectModel.FileInfo.FullName == SelectedItem.ProjectObjectModel.FileInfo.FullName)
+                {
+                    item.ProjectObjectModel = SelectedItem.ProjectObjectModel;
+                    break;
+                }
+            }
+        }
+
+        private bool EditCanExecute(object obj)
+        {
+            // can execute when source file is known
+            return SelectedItem.IsProject;
         }
 
         private void SelectItemExecute(object obj)
@@ -48,10 +160,14 @@ namespace md_dbdocs.app.ViewModels
             var outList = new ObservableCollection<ObjectChildModel>();
 
             // define lists and dictionaries, either use from models or create new, to avoid null reference exception
-            List<ServerObjectChildColumnModel> serverCols = solutionObjectModel.ServerObjectModel.ChildColumns ?? new List<ServerObjectChildColumnModel>();
-            List<ServerObjectChildParameterModel> serverParams = solutionObjectModel.ServerObjectModel.ChildParameters ?? new List<ServerObjectChildParameterModel>();
-            Dictionary<string, string> projCols = solutionObjectModel.ProjectObjectModel.HeaderModel.Fields ?? new Dictionary<string, string>();
-            Dictionary<string, string> projParams = solutionObjectModel.ProjectObjectModel.HeaderModel.Parameters ?? new Dictionary<string, string>();
+            ServerObjectParentModel serverObject = solutionObjectModel.ServerObjectModel ?? new ServerObjectParentModel();
+            ProjectObjectModel projectObject = solutionObjectModel.ProjectObjectModel ?? new ProjectObjectModel();
+            HeaderCommentModel commentModel = projectObject.HeaderModel ?? new HeaderCommentModel();
+
+            List<ServerObjectChildColumnModel> serverCols = serverObject.ChildColumns ?? new List<ServerObjectChildColumnModel>();
+            List<ServerObjectChildParameterModel> serverParams = serverObject.ChildParameters ?? new List<ServerObjectChildParameterModel>();
+            Dictionary<string, string> projCols = commentModel.Fields ?? new Dictionary<string, string>();
+            Dictionary<string, string> projParams = commentModel.Parameters ?? new Dictionary<string, string>();
 
 
             // loop on columns and parameters in server object and add to list

@@ -23,13 +23,14 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="2*"/>
             <RowDefinition Height="3*"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto" MaxWidth="{Binding ElementName=displayGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/7*2}"/>
-            <ColumnDefinition Width="auto" MaxWidth="{Binding ElementName=displayGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/7*2}"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
         
         <!--#region Stats and list of objects-->
@@ -55,16 +56,21 @@
                 <DataTemplate x:Key="dbdocs_tag">
                     <Image Source="{Binding ProjectObjectModel.HasTagDbDocs, Converter={StaticResource BoolToImageConverter}}" Width="16" Height="16" />
                 </DataTemplate>
+
+                <DataTemplate x:Key="reviewed">
+                    <Image Source="{Binding IsReviewed, Converter={StaticResource BoolToImageConverter}}" Width="16" Height="16" />
+                </DataTemplate>
             </DataGrid.Resources>
 
             <DataGrid.Columns>
                 <DataGridTemplateColumn CellTemplate="{StaticResource ResourceKey=imageCol_db}" Header="db"/>
                 <DataGridTemplateColumn CellTemplate="{StaticResource ResourceKey=imageCol_src}" Header="src"/>
-                <DataGridTextColumn Header="Module" IsReadOnly="True" Binding="{Binding ProjectObjectModel.HeaderCommentModel.Module}"/>
+                <DataGridTextColumn Header="Module" IsReadOnly="True" Binding="{Binding ProjectObjectModel.HeaderModel.Module}"/>
                 <DataGridTextColumn Header="Type" IsReadOnly="True" Binding="{Binding ServerObjectModel.ObjectTypeId}"/>
                 <DataGridTextColumn Header="Schema" IsReadOnly="True" Binding="{Binding ServerObjectModel.SchemaName}"/>
                 <DataGridTextColumn Header="Name" IsReadOnly="True" Binding="{Binding ServerObjectModel.ObjectName}"/>
                 <DataGridTemplateColumn CellTemplate="{StaticResource ResourceKey=dbdocs_tag}" Header="dbdocs"/>
+                <DataGridTemplateColumn CellTemplate="{StaticResource ResourceKey=reviewed}" Header="reviewed"/>
                 <DataGridTextColumn Header="Proj File" IsReadOnly="True" Binding="{Binding ProjectObjectModel.FileInfo.FullName}"/>
             </DataGrid.Columns>
             <i:Interaction.Triggers>
@@ -78,7 +84,7 @@
         </DataGrid>
         
         <!--#region Details of selected item-->
-        <Border x:Name="leftGrid" BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="0" Grid.RowSpan="1" Margin="5">
+        <Border x:Name="leftGrid" BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="0" Margin="5">
             <StackPanel Orientation="Vertical">
                 <TextBlock Text="Info From DataBase:" FontSize="20" Margin="5"/>
 
@@ -95,16 +101,16 @@
             </StackPanel>
         </Border>
 
-        <Border x:Name="middleGrid" BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="1" Grid.RowSpan="1" Margin="5">
+        <Border x:Name="middleGrid" BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="5">
             <Grid>
                 <StackPanel Orientation="Vertical">
-                    <TextBlock Text="Info From Source File:" FontSize="20" Margin="5"/>
+                    <!--<TextBlock Text="Info From Source File:" FontSize="20" Margin="5"/>
 
                     <ctrl:InfoBox SetBoxLabel="Type" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectType}"/>
                     <ctrl:InfoBox SetBoxLabel="Schema" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectSchema}"/>
                     <ctrl:InfoBox SetBoxLabel="Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.CreateObjectName}"/>
                     <ctrl:InfoBox SetBoxLabel="File Path" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.FileInfo.FullName}" 
-                                  SetBoxWidth="{Binding ElementName=middleGrid,Path=ActualWidth}"/>
+                                  SetBoxWidth="{Binding ElementName=middleGrid,Path=ActualWidth}"/>-->
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="db_docs info:" FontSize="16" Margin="5"/>
@@ -125,35 +131,63 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <ctrl:InfoBox SetBoxLabel="File_Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.File_Name}"/>
+                    <Grid x:Name="dbdocsGrid">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
 
-                    <ctrl:InfoBox SetBoxLabel="Created Date" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Created.Date}"/>
-                    <ctrl:InfoBox SetBoxLabel="Created WeekDay" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Created.WeekDay}"/>
+                        <ctrl:InfoBox Grid.Row="0" Grid.Column="0" SetBoxLabel="File_Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.File_Name}" SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="1" Grid.Column="0" SetBoxLabel="Created Date" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Created.Date}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="2" Grid.Column="0" SetBoxLabel="Created WeekDay" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Created.WeekDay}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="3" Grid.Column="0" SetBoxLabel="Author Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Author.Name}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="4" Grid.Column="0" SetBoxLabel="Author Initials" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Author.Initials}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="5" Grid.Column="0" SetBoxLabel="Author Email" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Author.Email}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
 
-                    <ctrl:InfoBox SetBoxLabel="Author Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Author.Name}"/>
-                    <ctrl:InfoBox SetBoxLabel="Author Initials" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Author.Initials}"/>
-                    <ctrl:InfoBox SetBoxLabel="Author Email" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Author.Email}"/>
+                        <ctrl:InfoBox Grid.Row="0" Grid.Column="1" SetBoxLabel="Modified Date" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.LastModified.Date}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="1" Grid.Column="1" SetBoxLabel="Modified WeekDay" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.LastModified.WeekDay}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="2" Grid.Column="1" SetBoxLabel="Modified By (Name)" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ModifiedBy.Name}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="3" Grid.Column="1" SetBoxLabel="Modified By (Initials)" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ModifiedBy.Initials}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="4" Grid.Column="1" SetBoxLabel="Modified By (Email)" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ModifiedBy.Email}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
 
-                    <ctrl:InfoBox SetBoxLabel="Modified Date" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.LastModified.Date}"/>
-                    <ctrl:InfoBox SetBoxLabel="Modified WeekDay" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.LastModified.WeekDay}"/>
+                        <ctrl:InfoBox Grid.Row="0" Grid.Column="2" SetBoxLabel="Module" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Module, Mode=TwoWay}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="1" Grid.Column="2" SetBoxLabel="Schema" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.SchemaName, Mode=TwoWay}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="2" Grid.Column="2" SetBoxLabel="Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ObjectName, Mode=TwoWay}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="3" Grid.Column="2" SetBoxLabel="Description" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Description, Mode=TwoWay}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="4" Grid.Column="2" SetBoxLabel="Return Val" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ReturnValue, Mode=TwoWay}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                        <ctrl:InfoBox Grid.Row="5" Grid.Column="2" SetBoxLabel="Diagram" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Diagram, Mode=TwoWay}"
+                                      SetBoxWidth="{Binding ElementName=dbdocsGrid, Path=ActualWidth, Converter={StaticResource MathConverter}, ConverterParameter=x/3}"/>
+                    </Grid>
 
-                    <ctrl:InfoBox SetBoxLabel="Modified By (Name)" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ModifiedBy.Name}"/>
-                    <ctrl:InfoBox SetBoxLabel="Modified By (Initials)" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ModifiedBy.Initials}"/>
-                    <ctrl:InfoBox SetBoxLabel="Modified By (Email)" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ModifiedBy.Email}"/>
-
-                    <ctrl:InfoBox SetBoxLabel="Module" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Module}"/>
-                    <ctrl:InfoBox SetBoxLabel="Schema" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.SchemaName}"/>
-                    <ctrl:InfoBox SetBoxLabel="Name" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ObjectName}"/>
-                    <ctrl:InfoBox SetBoxLabel="Description" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Description}"/>
-                    <ctrl:InfoBox SetBoxLabel="Return Val" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.ReturnValue}"/>
-                    <ctrl:InfoBox SetBoxLabel="Diagram" SetBoxValue="{Binding SelectedItem.ProjectObjectModel.HeaderModel.Diagram}"/>
-
-                    <Button Content="Generate db_docs" Margin="10"/>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="2" Grid.Column="2" Margin="5">
+        <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
             <StackPanel Orientation="Vertical">
                 <TextBlock Text="Columns/Parameters:" FontSize="20" Margin="5"/>
 
@@ -166,61 +200,31 @@
                         <DataGridTextColumn Header="IsServer" IsReadOnly="True" Binding="{Binding IsServer}"/>
                         <DataGridTextColumn Header="ServerDesc" IsReadOnly="True" Binding="{Binding ServerDesc}"/>
                         <DataGridTextColumn Header="IsProject" IsReadOnly="True" Binding="{Binding IsProject}"/>
-                        <DataGridTextColumn Header="ProjectDesc" Binding="{Binding ProjectDesc}"/>
+                        <DataGridTextColumn Header="ProjectDesc" IsReadOnly="True" Binding="{Binding ProjectDesc}"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </StackPanel>
         </Border>
 
         <!--#region Settings & navigation-->
-        <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
-            <DockPanel Height="100">
-                <StackPanel>
-                    <TextBlock Text="db_docs settings" Margin="5" FontWeight="Bold"/>
+        <Border BorderBrush="Black" BorderThickness="0.5" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="5">
+            <DockPanel>
+                <StackPanel Margin="5" Orientation="Horizontal" HorizontalAlignment="Right">
 
-                    <Border BorderBrush="DarkGray" BorderThickness="0.5">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="auto"/>
-                                <ColumnDefinition Width="auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                    <Button Width="150" HorizontalAlignment="Center" Margin="10" Command="{Binding EditCommand}">
+                        <TextBlock Text="Edit source in Azure Data Studio" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="100"/>
+                    </Button>
 
-                            <Grid Margin="10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
-                                </Grid.RowDefinitions>
+                    <Button Width="150" HorizontalAlignment="Center" Margin="10" Command="{Binding SaveCommand}">
+                        <TextBlock Text="Save + Mark Reviewed" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="100"/>
+                    </Button>
 
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Author Name: " HorizontalAlignment="Right" Margin="2"/>
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Author Initials: " HorizontalAlignment="Right" Margin="2"/>
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Author Email: " HorizontalAlignment="Right" Margin="2"/>
-
-                                <TextBox Grid.Row="0" Grid.Column="1" MinWidth="250" Margin="2"/>
-                                <TextBox Grid.Row="1" Grid.Column="1" MinWidth="250" Margin="2"/>
-                                <TextBox Grid.Row="2" Grid.Column="1" MinWidth="250" Margin="2"/>
-                            </Grid>
-
-
-                            <StackPanel Orientation="Vertical" Margin="10" Grid.Column="1">
-                                <CheckBox Content="Save db_docs to source file" />
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-
-                    <StackPanel Orientation="Horizontal">
-
-                        
-
-                            
-
-                        </StackPanel>
+                    <StackPanel Orientation="Vertical" Grid.Column="3" HorizontalAlignment="Right">
+                        <Button Content="Generate docs" Width="150" MinHeight="40" Margin="10 10 0 2" Command="{Binding GenerateDocsCommand}"/>
+                        <CheckBox Content="Ignore unreviewed items" Margin="10 0 0 2" IsChecked="{Binding IgnoreUnreviewed, Mode=TwoWay}"/>
                     </StackPanel>
+                    
+                </StackPanel>
             </DockPanel>
         </Border>
     </Grid>
