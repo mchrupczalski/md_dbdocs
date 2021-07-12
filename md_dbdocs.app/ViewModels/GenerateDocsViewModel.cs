@@ -9,19 +9,31 @@ namespace md_dbdocs.app.ViewModels
     public class GenerateDocsViewModel : BindableBase
     {
         private List<string> _modules;
+        private string _outputDir;
+        private string _docTitle;
+        private readonly ConfigModel _configModel;
 
         public ObservableCollection<SolutionObjectModel> SolutionObjects { get; }
         public List<string> Modules { get => _modules; set { _modules = value; base.OnPropertyChanged(); } }
-        public string OutputDir { get; set; }
+        public string OutputDir { get => _outputDir; set { _outputDir = value; base.OnPropertyChanged(); } }
+        public string DocTitle { get => _docTitle; set { _docTitle = value; base.OnPropertyChanged(); } }
 
-        public GenerateDocsViewModel(ObservableCollection<SolutionObjectModel> solutionObjects)
+        public GenerateDocsViewModel(ObservableCollection<SolutionObjectModel> solutionObjects, ConfigModel configModel)
         {
             SolutionObjects = solutionObjects;
+            _configModel = configModel;
+
             LoadDetails();
         }
 
         private void LoadDetails()
         {
+            // set outdir to .\Documentation in project root folder
+            this.OutputDir = _configModel.SqlProjectRootPath + "\\Documentation";
+
+            // set default title
+            this.DocTitle = $"{ _configModel.DataBase } Database Documentation";
+
             // extract list of modules
             this.Modules = (List<string>)SolutionObjects.GroupBy(p => p.ProjectObjectModel.HeaderModel.Module).Select(m => m.FirstOrDefault());
         }
@@ -30,7 +42,6 @@ namespace md_dbdocs.app.ViewModels
 
 /*
  * SectionId - 1.0.0.0
- * SectionLevel
  * SectionTitle - General Info / Module: Core
  * SectionLink - [#link]
  * SectionFilePath

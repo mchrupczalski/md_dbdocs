@@ -94,6 +94,7 @@
     <Compile Include="Helpers\SqlObjectTypeTranslator.cs" />
     <Compile Include="Helpers\YamlSerializer.cs" />
     <Compile Include="Models\ConfigValidationModel.cs" />
+    <Compile Include="Models\DocsModels\DocsGeneralInfoModel.cs" />
     <Compile Include="Models\ObjectChildModel.cs" />
     <Compile Include="Models\ServerObjectChildParameterModel.cs" />
     <Compile Include="Models\ServerObjectParentModel.cs" />
@@ -118,6 +119,9 @@
     </Compile>
     <Compile Include="Views\EditSourceView.xaml.cs">
       <DependentUpon>EditSourceView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\GenerateDocsView.xaml.cs">
+      <DependentUpon>GenerateDocsView.xaml</DependentUpon>
     </Compile>
     <Page Include="Controls\DisplayLabelValueControl.xaml">
       <SubType>Designer</SubType>
@@ -152,6 +156,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\EditSourceView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\GenerateDocsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

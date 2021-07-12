@@ -1,0 +1,141 @@
+﻿<UserControl x:Class="md_dbdocs.app.Views.GenerateDocsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:md_dbdocs.app.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="1000" d:DesignWidth="1500" d:Background="White">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!--#region Title and Output dir -->
+        <Grid Grid.Row="0" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Title: " TextAlignment="Right" VerticalAlignment="Bottom"/>
+            <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding DocTitle}" d:Text="Database Documentation Title" FontSize="20" FontWeight="Bold"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Output dir: " TextAlignment="Right" Margin="0 10 0 0"/>
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding OutputDir}" TextAlignment="Left" TextWrapping="Wrap" FontWeight="Bold" Margin="0 10 0 0" d:Text="C:\Output\Path"/>
+            <Button Grid.Row="1" Grid.Column="2" Content="Browse" HorizontalAlignment="Right" Margin="0 10 0 0"/>
+        </Grid>
+        
+        <!--#region General doc info -->
+        <Grid Grid.Row="1" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            
+            <TextBlock Grid.Row="0" Text="Section 1 - General database and documentation info." FontWeight="Bold" FontSize="18"/>
+
+            <DataGrid Grid.Row="1">
+                <DataGrid.Resources>
+                    <DataTemplate x:Key="buttonField">
+                        <Button Content="Browse" />
+                    </DataTemplate>
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Id" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Title"/>
+                    <DataGridTextColumn Header="*.md File Path"/>
+                    <DataGridTemplateColumn CellTemplate="{StaticResource ResourceKey=buttonField}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+        
+        
+
+        <!--#region Schemas and Roles info -->
+        <Grid Grid.Row="2" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Section 2 - Schemas and Roles (AUTOGEN)." FontWeight="Bold" FontSize="18"/>
+
+            <DataGrid Grid.Row="1">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Id" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Title"/>
+                    <DataGridTextColumn Header="Extended desc."/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <!--#region Modules list and settings -->
+        <Grid Grid.Row="3" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Section 3a - Modules - general info" FontWeight="Bold" FontSize="18"/>
+
+            <DataGrid Grid.Row="1">
+                <DataGrid.Resources>
+                    <DataTemplate x:Key="buttonField">
+                        <Button Content="Browse" />
+                    </DataTemplate>
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Id" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Title"/>
+                    <DataGridCheckBoxColumn Header="Generate module diagram"/>
+                    <DataGridTextColumn Header="*.md File Path"/>
+                    <DataGridTemplateColumn CellTemplate="{StaticResource ResourceKey=buttonField}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <!--#region Objects - auto gen list -->
+        <Grid Grid.Row="4" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Section 3b - Modules - objects info (AUTOGEN)" FontWeight="Bold" FontSize="18"/>
+
+            <DataGrid Grid.Row="1">
+                <DataGrid.Resources>
+                    <DataTemplate x:Key="buttonField">
+                        <Button Content="Browse" />
+                    </DataTemplate>
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Id" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Title"/>
+                    <DataGridTextColumn Header="Module"/>
+                    <DataGridTextColumn Header="Type"/>
+                    <DataGridTextColumn Header="Schema"/>
+                    <DataGridTextColumn Header="ObjectName"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <Button Grid.Row="5" Grid.Column="1" Content="Generate docs" HorizontalAlignment="Right" Margin="10" Height="30" Width="150"/>
+    </Grid>
+</UserControl>
