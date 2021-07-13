@@ -213,6 +213,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="SQL\GetDependants.sql" />
+    <Content Include="SQL\GetUsedBy.sql" />
     <Content Include="SQL\GetParametersInfo.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
