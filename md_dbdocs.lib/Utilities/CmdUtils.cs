@@ -1,6 +1,6 @@
-﻿namespace md_dbdocs.app.Helpers
+﻿namespace md_dbdocs.lib.Utilities
 {
-    public static class CmdHelper
+    public static class CmdUtils
     {
         public static string GetCmdOutput(string cmdCheckParameter)
         {
@@ -17,8 +17,7 @@
             };
             process.Start();
 
-            // Now read the value, parse to int and add 1 (from the original script)
-            string output = process.StandardOutput.ReadToEnd().Replace("`--", "").Replace(System.Environment.NewLine, "").Replace("\n", "");
+            string output = process.StandardOutput.ReadToEnd();
 
             process.WaitForExit();
 
