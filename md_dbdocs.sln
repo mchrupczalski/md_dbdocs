@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbDocsGenerator", "DbDocsGenerator\DbDocsGenerator.csproj", "{3641F2C3-7826-4C9D-9D6C-5A53A22D295D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "md_dbdocs.lib", "md_dbdocs.lib\md_dbdocs.lib.csproj", "{8C9F96AB-92C8-4DAD-BB34-836F7B8C1BAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,10 @@ Global
 		{3641F2C3-7826-4C9D-9D6C-5A53A22D295D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3641F2C3-7826-4C9D-9D6C-5A53A22D295D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3641F2C3-7826-4C9D-9D6C-5A53A22D295D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C9F96AB-92C8-4DAD-BB34-836F7B8C1BAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C9F96AB-92C8-4DAD-BB34-836F7B8C1BAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C9F96AB-92C8-4DAD-BB34-836F7B8C1BAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C9F96AB-92C8-4DAD-BB34-836F7B8C1BAA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
