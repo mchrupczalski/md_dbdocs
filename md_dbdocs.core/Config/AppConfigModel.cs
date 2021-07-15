@@ -1,8 +1,8 @@
-﻿using md_dbdocs.lib.Helpers;
+﻿using md_dbdocs.core.Helpers;
 using Newtonsoft.Json;
 using System.Runtime.CompilerServices;
 
-namespace md_dbdocs.lib.Models
+namespace md_dbdocs.core.Config
 {
     public class AppConfigModel : BindableBase
     {
@@ -39,5 +39,7 @@ namespace md_dbdocs.lib.Models
             base.OnPropertyChanged(propertyName);
             this.UseSqlLogin = !UseWindowsAuth;
         }
+
+
     }
 }

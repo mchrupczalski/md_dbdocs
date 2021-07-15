@@ -35,3 +35,4 @@ namespace md_dbdocs.lib.Serializers
             },
         };
     }
+}
